@@ -1,9 +1,10 @@
 // Domain
-export * from './domain/entities'
-export * from './domain/interfaces'
+export * from '@/entities/guest';
+export * from '@/entities/contract';
+export * from './domain/interfaces';
 
 // Infrastructure
-export * from './infrastructure'
+export * from './infrastructure';
 
 // Presentation
-export * from './presentation'
+export * from './presentation';

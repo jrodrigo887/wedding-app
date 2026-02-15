@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { usePhotosStore } from '../../infrastructure/stores';
 import { usePhotoRealtime } from '../../infrastructure/composables';
-import MediaCard from './MediaCard.vue';
+import { MediaCard } from '@/entities/photo';
 
 /**
  * Component: PhotoFeed
@@ -47,7 +47,7 @@ const setupObserver = () => {
   if (observer) observer.disconnect();
 
   observer = new IntersectionObserver(
-    (entries) => {
+    entries => {
       if (entries[0].isIntersecting && store.hasMore && !store.loadingMore) {
         store.fetchMorePhotos();
       }
@@ -113,13 +113,19 @@ const setFilter = (filter: MediaFilterType) => {
     </div>
 
     <!-- Loading inicial -->
-    <div v-if="store.loading" class="photo-feed__loading">
+    <div
+      v-if="store.loading"
+      class="photo-feed__loading"
+    >
       <div class="photo-feed__spinner"></div>
       <p>Carregando...</p>
     </div>
 
     <!-- Empty -->
-    <div v-else-if="!hasMedia" class="photo-feed__empty">
+    <div
+      v-else-if="!hasMedia"
+      class="photo-feed__empty"
+    >
       <span class="photo-feed__empty-icon">{{ emptyIcon }}</span>
       <p class="photo-feed__empty-text">{{ emptyMessage }}</p>
       <p class="photo-feed__empty-hint">Seja o primeiro a compartilhar!</p>
@@ -139,8 +145,14 @@ const setFilter = (filter: MediaFilterType) => {
       </div>
 
       <!-- Sentinel para infinite scroll -->
-      <div ref="sentinelRef" class="photo-feed__sentinel">
-        <div v-if="store.loadingMore" class="photo-feed__loading-more">
+      <div
+        ref="sentinelRef"
+        class="photo-feed__sentinel"
+      >
+        <div
+          v-if="store.loadingMore"
+          class="photo-feed__loading-more"
+        >
           <div class="photo-feed__spinner photo-feed__spinner--small"></div>
           <span>Carregando mais...</span>
         </div>

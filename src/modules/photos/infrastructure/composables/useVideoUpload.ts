@@ -1,92 +1,92 @@
-import { ref, computed, onUnmounted } from 'vue'
-import { usePhotosStore } from '../stores'
+import { ref, computed, onUnmounted } from 'vue';
+import { usePhotosStore } from '../stores';
 import {
   validateVideo,
   extractPosterFrame,
   getVideoDuration,
   formatDuration,
-} from '../services/videoCompressor'
+} from '../services/videoCompressor';
 
-const MAX_RECORDING_DURATION = 60 // segundos
+const MAX_RECORDING_DURATION = 60; // segundos
 
 /**
  * Composable: useVideoUpload
  * Gerencia upload e gravação de vídeos
  */
 export function useVideoUpload() {
-  const store = usePhotosStore()
+  const store = usePhotosStore();
 
   // Estado do arquivo selecionado
-  const selectedFile = ref<File | null>(null)
-  const previewUrl = ref<string | null>(null)
-  const posterBlob = ref<Blob | null>(null)
-  const posterUrl = ref<string | null>(null)
-  const videoDuration = ref<number>(0)
-  const validating = ref(false)
-  const validationError = ref<string | null>(null)
+  const selectedFile = ref<File | null>(null);
+  const previewUrl = ref<string | null>(null);
+  const posterBlob = ref<Blob | null>(null);
+  const posterUrl = ref<string | null>(null);
+  const videoDuration = ref<number>(0);
+  const validating = ref(false);
+  const validationError = ref<string | null>(null);
 
   // Estado de gravação
-  const isRecording = ref(false)
-  const recordingDuration = ref(0)
-  const recordedBlob = ref<Blob | null>(null)
-  const mediaRecorder = ref<MediaRecorder | null>(null)
-  const mediaStream = ref<MediaStream | null>(null)
-  const recordingInterval = ref<ReturnType<typeof setInterval> | null>(null)
+  const isRecording = ref(false);
+  const recordingDuration = ref(0);
+  const recordedBlob = ref<Blob | null>(null);
+  const mediaRecorder = ref<MediaRecorder | null>(null);
+  const mediaStream = ref<MediaStream | null>(null);
+  const recordingInterval = ref<ReturnType<typeof setInterval> | null>(null);
 
   // Estado de upload
-  const uploading = ref(false)
-  const uploadProgress = ref(0)
-  const uploadError = ref<string | null>(null)
+  const uploading = ref(false);
+  const uploadProgress = ref(0);
+  const uploadError = ref<string | null>(null);
 
   // Computed
   const canRecord = computed(() => {
-    return 'mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices
-  })
+    return 'mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices;
+  });
 
   const recordingTimeFormatted = computed(() => {
-    return formatDuration(recordingDuration.value)
-  })
+    return formatDuration(recordingDuration.value);
+  });
 
   const maxTimeFormatted = computed(() => {
-    return formatDuration(MAX_RECORDING_DURATION)
-  })
+    return formatDuration(MAX_RECORDING_DURATION);
+  });
 
   const hasVideo = computed(() => {
-    return !!selectedFile.value || !!recordedBlob.value
-  })
+    return !!selectedFile.value || !!recordedBlob.value;
+  });
 
   /**
    * Valida e prepara um arquivo de vídeo para upload
    */
   async function validateVideoFile(file: File): Promise<boolean> {
-    validating.value = true
-    validationError.value = null
+    validating.value = true;
+    validationError.value = null;
 
     try {
-      const result = await validateVideo(file)
+      const result = await validateVideo(file);
 
       if (!result.valid) {
-        validationError.value = result.error || 'Vídeo inválido'
-        return false
+        validationError.value = result.error || 'Vídeo inválido';
+        return false;
       }
 
       // Extrai poster frame
-      const poster = await extractPosterFrame(file)
+      const poster = await extractPosterFrame(file);
 
       // Atualiza estados
-      selectedFile.value = file
-      previewUrl.value = URL.createObjectURL(file)
-      posterBlob.value = poster
-      posterUrl.value = URL.createObjectURL(poster)
-      videoDuration.value = result.duration || 0
+      selectedFile.value = file;
+      previewUrl.value = URL.createObjectURL(file);
+      posterBlob.value = poster;
+      posterUrl.value = URL.createObjectURL(poster);
+      videoDuration.value = result.duration || 0;
 
-      return true
+      return true;
     } catch (error) {
-      console.error('[useVideoUpload] Erro ao validar vídeo:', error)
-      validationError.value = 'Erro ao processar vídeo'
-      return false
+      console.error('[useVideoUpload] Erro ao validar vídeo:', error);
+      validationError.value = 'Erro ao processar vídeo';
+      return false;
     } finally {
-      validating.value = false
+      validating.value = false;
     }
   }
 
@@ -95,8 +95,8 @@ export function useVideoUpload() {
    */
   async function startRecording(): Promise<boolean> {
     if (!canRecord.value) {
-      validationError.value = 'Gravação de vídeo não suportada neste navegador'
-      return false
+      validationError.value = 'Gravação de vídeo não suportada neste navegador';
+      return false;
     }
 
     try {
@@ -108,74 +108,74 @@ export function useVideoUpload() {
           height: { ideal: 720 },
         },
         audio: true,
-      })
+      });
 
-      mediaStream.value = stream
+      mediaStream.value = stream;
 
       // Configura o MediaRecorder
       const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
         ? 'video/webm;codecs=vp9'
         : MediaRecorder.isTypeSupported('video/webm')
           ? 'video/webm'
-          : 'video/mp4'
+          : 'video/mp4';
 
       const recorder = new MediaRecorder(stream, {
         mimeType,
         videoBitsPerSecond: 2500000, // 2.5 Mbps
-      })
+      });
 
-      const chunks: Blob[] = []
+      const chunks: Blob[] = [];
 
-      recorder.ondataavailable = (event) => {
+      recorder.ondataavailable = event => {
         if (event.data.size > 0) {
-          chunks.push(event.data)
+          chunks.push(event.data);
         }
-      }
+      };
 
       recorder.onstop = async () => {
-        const blob = new Blob(chunks, { type: mimeType })
-        recordedBlob.value = blob
-        previewUrl.value = URL.createObjectURL(blob)
+        const blob = new Blob(chunks, { type: mimeType });
+        recordedBlob.value = blob;
+        previewUrl.value = URL.createObjectURL(blob);
 
         // Extrai poster
         try {
-          const poster = await extractPosterFrame(blob)
-          posterBlob.value = poster
-          posterUrl.value = URL.createObjectURL(poster)
-          videoDuration.value = await getVideoDuration(blob)
+          const poster = await extractPosterFrame(blob);
+          posterBlob.value = poster;
+          posterUrl.value = URL.createObjectURL(poster);
+          videoDuration.value = await getVideoDuration(blob);
         } catch (error) {
-          console.error('[useVideoUpload] Erro ao extrair poster:', error)
+          console.error('[useVideoUpload] Erro ao extrair poster:', error);
         }
 
         // Para a stream
-        stopStream()
-      }
+        stopStream();
+      };
 
-      mediaRecorder.value = recorder
-      recorder.start(1000) // Coleta dados a cada segundo
+      mediaRecorder.value = recorder;
+      recorder.start(1000); // Coleta dados a cada segundo
 
-      isRecording.value = true
-      recordingDuration.value = 0
+      isRecording.value = true;
+      recordingDuration.value = 0;
 
       // Inicia contador de tempo
       recordingInterval.value = setInterval(() => {
-        recordingDuration.value++
+        recordingDuration.value++;
 
         // Auto-stop aos 60 segundos
         if (recordingDuration.value >= MAX_RECORDING_DURATION) {
-          stopRecording()
+          stopRecording();
         }
-      }, 1000)
+      }, 1000);
 
-      return true
+      return true;
     } catch (error) {
-      console.error('[useVideoUpload] Erro ao iniciar gravação:', error)
+      console.error('[useVideoUpload] Erro ao iniciar gravação:', error);
       if (error instanceof DOMException && error.name === 'NotAllowedError') {
-        validationError.value = 'Permissão para câmera negada'
+        validationError.value = 'Permissão para câmera negada';
       } else {
-        validationError.value = 'Erro ao acessar câmera'
+        validationError.value = 'Erro ao acessar câmera';
       }
-      return false
+      return false;
     }
   }
 
@@ -184,12 +184,12 @@ export function useVideoUpload() {
    */
   function stopRecording(): void {
     if (mediaRecorder.value && isRecording.value) {
-      mediaRecorder.value.stop()
-      isRecording.value = false
+      mediaRecorder.value.stop();
+      isRecording.value = false;
 
       if (recordingInterval.value) {
-        clearInterval(recordingInterval.value)
-        recordingInterval.value = null
+        clearInterval(recordingInterval.value);
+        recordingInterval.value = null;
       }
     }
   }
@@ -199,10 +199,9 @@ export function useVideoUpload() {
    */
   function stopStream(): void {
     if (mediaStream.value) {
-      mediaStream.value.getTracks().forEach((track) => track.stop())
-      mediaStream.value = null
+      mediaStream.value.getTracks().forEach(track => track.stop());
+      mediaStream.value = null;
     }
-
   }
 
   /**
@@ -211,62 +210,63 @@ export function useVideoUpload() {
   function cancelRecording(): void {
     if (isRecording.value) {
       if (mediaRecorder.value) {
-        mediaRecorder.value.stop()
+        mediaRecorder.value.stop();
       }
-      isRecording.value = false
+      isRecording.value = false;
     }
 
     if (recordingInterval.value) {
-      clearInterval(recordingInterval.value)
-      recordingInterval.value = null
+      clearInterval(recordingInterval.value);
+      recordingInterval.value = null;
     }
 
-    stopStream()
-    recordingDuration.value = 0
-    recordedBlob.value = null
+    stopStream();
+    recordingDuration.value = 0;
+    recordedBlob.value = null;
   }
 
   /**
    * Faz upload do vídeo (gravado ou selecionado)
    */
   async function uploadVideo(caption?: string): Promise<boolean> {
-    const videoToUpload = recordedBlob.value || selectedFile.value
+    const videoToUpload = recordedBlob.value || selectedFile.value;
     if (!videoToUpload) {
-      uploadError.value = 'Nenhum vídeo para enviar'
-      return false
+      uploadError.value = 'Nenhum vídeo para enviar';
+      return false;
     }
 
     if (!posterBlob.value) {
-      uploadError.value = 'Poster não gerado'
-      return false
+      uploadError.value = 'Poster não gerado';
+      return false;
     }
 
-    uploading.value = true
-    uploadProgress.value = 0
-    uploadError.value = null
+    uploading.value = true;
+    uploadProgress.value = 0;
+    uploadError.value = null;
 
     try {
-      const file = videoToUpload instanceof File
-        ? videoToUpload
-        : new File([videoToUpload], `video_${Date.now()}.webm`, { type: videoToUpload.type })
+      const file =
+        videoToUpload instanceof File
+          ? videoToUpload
+          : new File([videoToUpload], `video_${Date.now()}.webm`, { type: videoToUpload.type });
 
       const success = await store.uploadMedia(file, caption, {
         media_type: 'video',
         duration: videoDuration.value,
         posterBlob: posterBlob.value,
-      })
+      });
 
       if (success) {
-        clearVideo()
+        clearVideo();
       }
 
-      return success
+      return success;
     } catch (error) {
-      console.error('[useVideoUpload] Erro ao fazer upload:', error)
-      uploadError.value = 'Erro ao enviar vídeo'
-      return false
+      console.error('[useVideoUpload] Erro ao fazer upload:', error);
+      uploadError.value = 'Erro ao enviar vídeo';
+      return false;
     } finally {
-      uploading.value = false
+      uploading.value = false;
     }
   }
 
@@ -275,34 +275,34 @@ export function useVideoUpload() {
    */
   function clearVideo(): void {
     if (previewUrl.value) {
-      URL.revokeObjectURL(previewUrl.value)
+      URL.revokeObjectURL(previewUrl.value);
     }
     if (posterUrl.value) {
-      URL.revokeObjectURL(posterUrl.value)
+      URL.revokeObjectURL(posterUrl.value);
     }
 
-    selectedFile.value = null
-    previewUrl.value = null
-    posterBlob.value = null
-    posterUrl.value = null
-    recordedBlob.value = null
-    videoDuration.value = 0
-    validationError.value = null
-    uploadError.value = null
+    selectedFile.value = null;
+    previewUrl.value = null;
+    posterBlob.value = null;
+    posterUrl.value = null;
+    recordedBlob.value = null;
+    videoDuration.value = 0;
+    validationError.value = null;
+    uploadError.value = null;
   }
 
   /**
    * Retorna a stream de vídeo para preview
    */
   function getMediaStream(): MediaStream | null {
-    return mediaStream.value
+    return mediaStream.value;
   }
 
   // Cleanup on unmount
   onUnmounted(() => {
-    cancelRecording()
-    clearVideo()
-  })
+    cancelRecording();
+    clearVideo();
+  });
 
   return {
     // Estado do arquivo
@@ -337,5 +337,5 @@ export function useVideoUpload() {
     uploadVideo,
     clearVideo,
     getMediaStream,
-  }
+  };
 }

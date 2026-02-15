@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useVideoUpload } from '../../infrastructure/composables/useVideoUpload'
-import { usePhotosStore } from '../../infrastructure/stores'
-import { formatFileSize, formatDuration } from '../../infrastructure/services/videoCompressor'
-import UploadProgress from './UploadProgress.vue'
+import { ref } from 'vue';
+import { useVideoUpload } from '../../infrastructure/composables/useVideoUpload';
+import { usePhotosStore } from '../../infrastructure/stores';
+import { formatFileSize, formatDuration } from '../../infrastructure/services/videoCompressor';
+import UploadProgress from './UploadProgress.vue';
 
 /**
  * Component: VideoUploader
@@ -11,10 +11,10 @@ import UploadProgress from './UploadProgress.vue'
  */
 
 const emit = defineEmits<{
-  (e: 'uploaded'): void
-}>()
+  (e: 'uploaded'): void;
+}>();
 
-const store = usePhotosStore()
+const store = usePhotosStore();
 const {
   selectedFile,
   previewUrl,
@@ -28,57 +28,57 @@ const {
   validateVideoFile,
   uploadVideo,
   clearVideo,
-} = useVideoUpload()
+} = useVideoUpload();
 
-const fileInputRef = ref<HTMLInputElement | null>(null)
-const caption = ref('')
-const isDragging = ref(false)
+const fileInputRef = ref<HTMLInputElement | null>(null);
+const caption = ref('');
+const isDragging = ref(false);
 
 const handleClick = () => {
-  fileInputRef.value?.click()
-}
+  fileInputRef.value?.click();
+};
 
 const handleFileSelect = async (event: Event) => {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
   if (file) {
-    await validateVideoFile(file)
+    await validateVideoFile(file);
   }
   // Reset input para permitir selecionar o mesmo arquivo novamente
   if (fileInputRef.value) {
-    fileInputRef.value.value = ''
+    fileInputRef.value.value = '';
   }
-}
+};
 
 const handleDrop = async (event: DragEvent) => {
-  isDragging.value = false
-  const file = event.dataTransfer?.files?.[0]
+  isDragging.value = false;
+  const file = event.dataTransfer?.files?.[0];
   if (file && file.type.startsWith('video/')) {
-    await validateVideoFile(file)
+    await validateVideoFile(file);
   }
-}
+};
 
 const handleDragOver = (event: DragEvent) => {
-  event.preventDefault()
-  isDragging.value = true
-}
+  event.preventDefault();
+  isDragging.value = true;
+};
 
 const handleDragLeave = () => {
-  isDragging.value = false
-}
+  isDragging.value = false;
+};
 
 const handleDiscard = () => {
-  clearVideo()
-  caption.value = ''
-}
+  clearVideo();
+  caption.value = '';
+};
 
 const handleUpload = async () => {
-  const success = await uploadVideo(caption.value || undefined)
+  const success = await uploadVideo(caption.value || undefined);
   if (success) {
-    caption.value = ''
-    emit('uploaded')
+    caption.value = '';
+    emit('uploaded');
   }
-}
+};
 </script>
 
 <template>
@@ -102,32 +102,43 @@ const handleUpload = async () => {
       @dragover="handleDragOver"
       @dragleave="handleDragLeave"
     >
-      <div v-if="validating" class="video-uploader__loading">
+      <div
+        v-if="validating"
+        class="video-uploader__loading"
+      >
         <div class="video-uploader__spinner"></div>
         <p>Processando vídeo...</p>
       </div>
 
       <template v-else>
         <span class="video-uploader__icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path
+              d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+            />
           </svg>
         </span>
         <p class="video-uploader__text">
           <span class="video-uploader__text-main">Toque para selecionar um vídeo</span>
           <span class="video-uploader__text-hint">ou arraste e solte aqui</span>
         </p>
-        <p class="video-uploader__formats">
-          MP4, WebM, MOV - Máx. 60s / 100MB
-        </p>
-        <p class="video-uploader__limit">
-          {{ store.currentGuestVideoCount }}/5 vídeos enviados
-        </p>
+        <p class="video-uploader__formats">MP4, WebM, MOV - Máx. 60s / 100MB</p>
+        <p class="video-uploader__limit">{{ store.currentGuestVideoCount }}/5 vídeos enviados</p>
       </template>
     </div>
 
     <!-- Preview do vídeo selecionado -->
-    <div v-else class="video-uploader__preview">
+    <div
+      v-else
+      class="video-uploader__preview"
+    >
       <div class="video-uploader__video-container">
         <video
           :src="previewUrl || undefined"
@@ -144,7 +155,10 @@ const handleUpload = async () => {
           <span class="video-uploader__info-label">Duração:</span>
           <span>{{ formatDuration(videoDuration) }}</span>
         </div>
-        <div v-if="selectedFile" class="video-uploader__info-item">
+        <div
+          v-if="selectedFile"
+          class="video-uploader__info-item"
+        >
           <span class="video-uploader__info-label">Tamanho:</span>
           <span>{{ formatFileSize(selectedFile.size) }}</span>
         </div>
@@ -179,14 +193,24 @@ const handleUpload = async () => {
       </div>
 
       <!-- Progress -->
-      <UploadProgress v-if="uploading" :progress="100" status="uploading" />
+      <UploadProgress
+        v-if="uploading"
+        :progress="100"
+        status="uploading"
+      />
     </div>
 
     <!-- Erros -->
-    <p v-if="validationError" class="video-uploader__message video-uploader__message--error">
+    <p
+      v-if="validationError"
+      class="video-uploader__message video-uploader__message--error"
+    >
       {{ validationError }}
     </p>
-    <p v-if="uploadError" class="video-uploader__message video-uploader__message--error">
+    <p
+      v-if="uploadError"
+      class="video-uploader__message video-uploader__message--error"
+    >
       {{ uploadError }}
     </p>
   </div>
@@ -242,7 +266,9 @@ const handleUpload = async () => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .video-uploader__icon {

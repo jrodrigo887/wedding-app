@@ -1,3 +1,1 @@
-// Core Types - API Pública
-
-export * from './common'
+export * from '@shared/types';

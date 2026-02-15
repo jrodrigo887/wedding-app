@@ -3,33 +3,33 @@
 // Gerencia carregamento e persistência de configuração do tenant
 // ========================================
 
-import { supabase } from './supabase'
-import type { TenantConfig } from '@/config/tenant'
-import { setTenant } from '@/config/tenant'
+import { supabase } from '@shared/lib/supabase';
+import type { TenantConfig } from '@shared/config/tenant';
+import { setTenant } from '@shared/config/tenant';
 
 // Interface do tenant no banco de dados
 interface TenantRow {
-  id: string
-  slug: string
-  name: string
-  features: TenantConfig['features']
-  limits: TenantConfig['limits']
-  theme: TenantConfig['theme']
+  id: string;
+  slug: string;
+  name: string;
+  features: TenantConfig['features'];
+  limits: TenantConfig['limits'];
+  theme: TenantConfig['theme'];
   config: {
-    backend: TenantConfig['backend']
-    integrations: TenantConfig['integrations']
-  }
-  plan: string
-  is_active: boolean
-  custom_domain: string | null
-  created_at: string
-  updated_at: string
-  expires_at: string | null
+    backend: TenantConfig['backend'];
+    integrations: TenantConfig['integrations'];
+  };
+  plan: string;
+  is_active: boolean;
+  custom_domain: string | null;
+  created_at: string;
+  updated_at: string;
+  expires_at: string | null;
 }
 
 // Cache do tenant atual
-let cachedTenant: TenantConfig | null = null
-let cachedTenantId: string | null = null
+let cachedTenant: TenantConfig | null = null;
+let cachedTenantId: string | null = null;
 
 /**
  * Converte dados do banco para TenantConfig
@@ -48,7 +48,7 @@ function mapRowToTenantConfig(row: TenantRow): TenantConfig {
     },
     backend: row.config?.backend || 'supabase',
     integrations: row.config?.integrations || {},
-  }
+  };
 }
 
 /**
@@ -59,13 +59,13 @@ async function setTenantContext(tenantId: string): Promise<void> {
   try {
     const { error } = await supabase.rpc('set_current_tenant_id', {
       p_tenant_id: tenantId,
-    })
+    });
 
     if (error) {
-      console.warn('[TenantService] Erro ao definir contexto do tenant:', error)
+      console.warn('[TenantService] Erro ao definir contexto do tenant:', error);
     }
   } catch (err) {
-    console.warn('[TenantService] Função RPC não disponível:', err)
+    console.warn('[TenantService] Função RPC não disponível:', err);
   }
 }
 
@@ -79,31 +79,31 @@ export async function loadTenantBySlug(slug: string): Promise<TenantConfig | nul
       .select('*')
       .eq('slug', slug)
       .eq('is_active', true)
-      .single()
+      .single();
 
     if (error) {
       if (error.code === 'PGRST116') {
-        console.warn(`[TenantService] Tenant não encontrado: ${slug}`)
-        return null
+        console.warn(`[TenantService] Tenant não encontrado: ${slug}`);
+        return null;
       }
-      throw error
+      throw error;
     }
 
-    const config = mapRowToTenantConfig(data as TenantRow)
+    const config = mapRowToTenantConfig(data as TenantRow);
 
     // Cachear e definir como tenant atual
-    cachedTenant = config
-    cachedTenantId = config.id
-    setTenant(config)
+    cachedTenant = config;
+    cachedTenantId = config.id;
+    setTenant(config);
 
     // Definir contexto RLS
-    await setTenantContext(config.id)
+    await setTenantContext(config.id);
 
-    console.log(`[TenantService] Tenant carregado: ${config.name} (${slug})`)
-    return config
+    console.log(`[TenantService] Tenant carregado: ${config.name} (${slug})`);
+    return config;
   } catch (err) {
-    console.error('[TenantService] Erro ao carregar tenant:', err)
-    return null
+    console.error('[TenantService] Erro ao carregar tenant:', err);
+    return null;
   }
 }
 
@@ -117,31 +117,31 @@ export async function loadTenantByDomain(domain: string): Promise<TenantConfig |
       .select('*')
       .eq('custom_domain', domain)
       .eq('is_active', true)
-      .single()
+      .single();
 
     if (error) {
       if (error.code === 'PGRST116') {
-        console.warn(`[TenantService] Tenant não encontrado para domínio: ${domain}`)
-        return null
+        console.warn(`[TenantService] Tenant não encontrado para domínio: ${domain}`);
+        return null;
       }
-      throw error
+      throw error;
     }
 
-    const config = mapRowToTenantConfig(data as TenantRow)
+    const config = mapRowToTenantConfig(data as TenantRow);
 
     // Cachear e definir como tenant atual
-    cachedTenant = config
-    cachedTenantId = config.id
-    setTenant(config)
+    cachedTenant = config;
+    cachedTenantId = config.id;
+    setTenant(config);
 
     // Definir contexto RLS
-    await setTenantContext(config.id)
+    await setTenantContext(config.id);
 
-    console.log(`[TenantService] Tenant carregado por domínio: ${config.name}`)
-    return config
+    console.log(`[TenantService] Tenant carregado por domínio: ${config.name}`);
+    return config;
   } catch (err) {
-    console.error('[TenantService] Erro ao carregar tenant por domínio:', err)
-    return null
+    console.error('[TenantService] Erro ao carregar tenant por domínio:', err);
+    return null;
   }
 }
 
@@ -155,30 +155,30 @@ export async function loadTenantById(id: string): Promise<TenantConfig | null> {
       .select('*')
       .eq('id', id)
       .eq('is_active', true)
-      .single()
+      .single();
 
     if (error) {
       if (error.code === 'PGRST116') {
-        console.warn(`[TenantService] Tenant não encontrado: ${id}`)
-        return null
+        console.warn(`[TenantService] Tenant não encontrado: ${id}`);
+        return null;
       }
-      throw error
+      throw error;
     }
 
-    const config = mapRowToTenantConfig(data as TenantRow)
+    const config = mapRowToTenantConfig(data as TenantRow);
 
     // Cachear e definir como tenant atual
-    cachedTenant = config
-    cachedTenantId = config.id
-    setTenant(config)
+    cachedTenant = config;
+    cachedTenantId = config.id;
+    setTenant(config);
 
     // Definir contexto RLS
-    await setTenantContext(config.id)
+    await setTenantContext(config.id);
 
-    return config
+    return config;
   } catch (err) {
-    console.error('[TenantService] Erro ao carregar tenant:', err)
-    return null
+    console.error('[TenantService] Erro ao carregar tenant:', err);
+    return null;
   }
 }
 
@@ -186,22 +186,22 @@ export async function loadTenantById(id: string): Promise<TenantConfig | null> {
  * Retorna o tenant cacheado
  */
 export function getCachedTenant(): TenantConfig | null {
-  return cachedTenant
+  return cachedTenant;
 }
 
 /**
  * Retorna o ID do tenant atual
  */
 export function getCurrentTenantId(): string | null {
-  return cachedTenantId
+  return cachedTenantId;
 }
 
 /**
  * Limpa o cache do tenant
  */
 export function clearTenantCache(): void {
-  cachedTenant = null
-  cachedTenantId = null
+  cachedTenant = null;
+  cachedTenantId = null;
 }
 
 /**
@@ -212,15 +212,15 @@ export function checkTenantLimit(
   currentValue: number
 ): { allowed: boolean; max: number; current: number } {
   if (!cachedTenant) {
-    return { allowed: true, max: Infinity, current: currentValue }
+    return { allowed: true, max: Infinity, current: currentValue };
   }
 
-  const max = cachedTenant.limits[limit]
+  const max = cachedTenant.limits[limit];
   return {
     allowed: currentValue < max,
     max,
     current: currentValue,
-  }
+  };
 }
 
 /**
@@ -237,19 +237,19 @@ export async function updateTenantConfig(
         ...updates,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', tenantId)
+      .eq('id', tenantId);
 
     if (error) {
-      console.error('[TenantService] Erro ao atualizar tenant:', error)
-      return false
+      console.error('[TenantService] Erro ao atualizar tenant:', error);
+      return false;
     }
 
     // Recarregar tenant para atualizar cache
-    await loadTenantById(tenantId)
+    await loadTenantById(tenantId);
 
-    return true
+    return true;
   } catch (err) {
-    console.error('[TenantService] Erro ao atualizar tenant:', err)
-    return false
+    console.error('[TenantService] Erro ao atualizar tenant:', err);
+    return false;
   }
 }

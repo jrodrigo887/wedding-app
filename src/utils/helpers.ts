@@ -2,7 +2,7 @@
 // FUNCOES AUXILIARES
 // ========================================
 
-import { VALIDATION_RULES } from "./constants";
+import { VALIDATION_RULES } from './constants';
 
 /**
  * Copia texto para a area de transferencia
@@ -12,7 +12,7 @@ export const copyToClipboard = async (text: string): Promise<boolean> => {
     await navigator.clipboard.writeText(text);
     return true;
   } catch (error) {
-    console.error("Erro ao copiar:", error);
+    console.error('Erro ao copiar:', error);
     return false;
   }
 };
@@ -20,27 +20,27 @@ export const copyToClipboard = async (text: string): Promise<boolean> => {
 /**
  * Formata data para exibicao
  */
-export const formatDate = (date: string | Date, locale = "pt-BR"): string => {
+export const formatDate = (date: string | Date, locale = 'pt-BR'): string => {
   let dateObj: Date;
   if (date instanceof Date) {
     dateObj = date;
-  } else if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    const [year, month, day] = date.split("-");
+  } else if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    const [year, month, day] = date.split('-');
     dateObj = new Date(Number(year), Number(month) - 1, Number(day));
   } else {
     dateObj = new Date(date);
   }
   return dateObj.toLocaleDateString(locale, {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
   });
 };
 
 export const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
   }).format(value);
 };
 
@@ -49,7 +49,7 @@ export const formatCurrency = (value: number): string => {
  */
 export const debounce = <T extends (...args: Parameters<T>) => ReturnType<T>>(
   func: T,
-  delay = 300,
+  delay = 300
 ): ((...args: Parameters<T>) => void) => {
   let timeoutId: ReturnType<typeof setTimeout>;
   return (...args: Parameters<T>) => {
@@ -63,7 +63,7 @@ export const debounce = <T extends (...args: Parameters<T>) => ReturnType<T>>(
  */
 export const throttle = <T extends (...args: Parameters<T>) => ReturnType<T>>(
   func: T,
-  limit = 300,
+  limit = 300
 ): ((...args: Parameters<T>) => void) => {
   let inThrottle = false;
   return (...args: Parameters<T>) => {
@@ -104,7 +104,7 @@ export const isValidPhone = (phone: string): boolean => {
  * Sanitiza string (remove tags HTML)
  */
 export const sanitizeString = (str: string): string => {
-  const div = document.createElement("div");
+  const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
 };
@@ -127,7 +127,7 @@ export const capitalize = (str: string): string => {
  * Remove acentos de string
  */
 export const removeAccents = (str: string): string => {
-  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 };
 
 /**
@@ -143,7 +143,7 @@ export const truncate = (text: string, maxLength = 50): string => {
  */
 export const groupBy = <T extends Record<string, unknown>>(
   array: T[],
-  key: keyof T,
+  key: keyof T
 ): Record<string, T[]> => {
   return array.reduce(
     (result, item) => {
@@ -152,7 +152,7 @@ export const groupBy = <T extends Record<string, unknown>>(
       result[group].push(item);
       return result;
     },
-    {} as Record<string, T[]>,
+    {} as Record<string, T[]>
   );
 };
 
@@ -162,13 +162,13 @@ export const groupBy = <T extends Record<string, unknown>>(
 export const sortBy = <T extends Record<string, unknown>>(
   array: T[],
   key: keyof T,
-  order: "asc" | "desc" = "asc",
+  order: 'asc' | 'desc' = 'asc'
 ): T[] => {
   return [...array].sort((a, b) => {
     const valueA = a[key];
     const valueB = b[key];
 
-    if (order === "asc") {
+    if (order === 'asc') {
       return valueA > valueB ? 1 : -1;
     } else {
       return valueA < valueB ? 1 : -1;
@@ -180,23 +180,21 @@ export const sortBy = <T extends Record<string, unknown>>(
  * Verifica se esta em dispositivo mobile
  */
 export const isMobile = (): boolean => {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent,
-  );
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 };
 
 /**
  * Sleep/Delay
  */
 export const sleep = (ms: number): Promise<void> => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 };
 
 /**
  * Formata telefone brasileiro
  */
 export const formatPhone = (phone: string): string => {
-  const cleaned = phone.replace(/\D/g, "");
+  const cleaned = phone.replace(/\D/g, '');
   const match = cleaned.match(/^(\d{2})(\d{4,5})(\d{4})$/);
   if (match) {
     return `(${match[1]}) ${match[2]}-${match[3]}`;
@@ -211,6 +209,6 @@ export const smoothScrollTo = (selector: string, offset = 0): void => {
   const element = document.querySelector(selector) as HTMLElement | null;
   if (element) {
     const top = element.offsetTop - offset;
-    window.scrollTo({ top, behavior: "smooth" });
+    window.scrollTo({ top, behavior: 'smooth' });
   }
 };

@@ -11,7 +11,10 @@
         <span class="guest-details__value">{{ guest.codigo }}</span>
       </div>
 
-      <div v-if="guest.acompanhantes > 0" class="guest-details__item">
+      <div
+        v-if="guest.acompanhantes > 0"
+        class="guest-details__item"
+      >
         <span class="guest-details__label">Acompanhantes:</span>
         <span class="guest-details__value">{{ guest.acompanhantes }}</span>
       </div>
@@ -28,7 +31,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { RsvpGuest } from '../../../domain/entities';
+import type { RsvpGuest } from '@/entities/guest';
 
 /**
  * Component: GuestDetails
@@ -41,7 +44,7 @@ const props = withDefaults(
   }>(),
   {
     icon: '👋',
-  },
+  }
 );
 
 const totalPeople = computed(() => {

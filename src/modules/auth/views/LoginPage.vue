@@ -5,7 +5,10 @@
         <h1 class="login-title">Área Restrita</h1>
         <p class="login-subtitle">Faça login para continuar</p>
 
-        <form class="login-form" @submit.prevent="handleLogin">
+        <form
+          class="login-form"
+          @submit.prevent="handleLogin"
+        >
           <div class="login-form__group">
             <input
               v-model="email"
@@ -37,9 +40,17 @@
           </button>
         </form>
 
-        <p v-if="error" class="login-error">{{ error }}</p>
+        <p
+          v-if="error"
+          class="login-error"
+        >
+          {{ error }}
+        </p>
 
-        <router-link to="/" class="login-back">
+        <router-link
+          to="/"
+          class="login-back"
+        >
           Voltar ao início
         </router-link>
       </div>

@@ -24,7 +24,10 @@
       </button>
     </div>
 
-    <p v-if="error" class="pin-auth__error">
+    <p
+      v-if="error"
+      class="pin-auth__error"
+    >
       {{ error }}
     </p>
   </div>
@@ -49,7 +52,7 @@ withDefaults(
     icon: '🔐',
     title: 'Área Restrita',
     message: 'Digite o PIN de acesso para continuar',
-  },
+  }
 );
 
 defineEmits<{

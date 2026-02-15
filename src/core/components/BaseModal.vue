@@ -1,11 +1,25 @@
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="show" class="modal-overlay" @click.self="handleClose">
-        <div class="modal" :class="sizeClass">
-          <div v-if="title" class="modal__header">
+      <div
+        v-if="show"
+        class="modal-overlay"
+        @click.self="handleClose"
+      >
+        <div
+          class="modal"
+          :class="sizeClass"
+        >
+          <div
+            v-if="title"
+            class="modal__header"
+          >
             <h2 class="modal__title">{{ title }}</h2>
-            <button v-if="closable" class="modal__close" @click="handleClose">
+            <button
+              v-if="closable"
+              class="modal__close"
+              @click="handleClose"
+            >
               <span aria-hidden="true">✕</span>
               <span class="sr-only">Fechar</span>
             </button>
@@ -13,7 +27,10 @@
           <div class="modal__body">
             <slot></slot>
           </div>
-          <div v-if="$slots.footer" class="modal__footer">
+          <div
+            v-if="$slots.footer"
+            class="modal__footer"
+          >
             <slot name="footer"></slot>
           </div>
         </div>
@@ -23,43 +40,43 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, watch } from 'vue';
 
 interface Props {
-  show: boolean
-  title?: string
-  size?: 'sm' | 'md' | 'lg'
-  closable?: boolean
+  show: boolean;
+  title?: string;
+  size?: 'sm' | 'md' | 'lg';
+  closable?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   size: 'md',
   closable: true,
-})
+});
 
 const emit = defineEmits<{
-  close: []
-}>()
+  close: [];
+}>();
 
-const sizeClass = computed(() => `modal--${props.size}`)
+const sizeClass = computed(() => `modal--${props.size}`);
 
 const handleClose = () => {
   if (props.closable) {
-    emit('close')
+    emit('close');
   }
-}
+};
 
 // Bloquear scroll do body quando modal está aberto
 watch(
   () => props.show,
-  (isVisible) => {
+  isVisible => {
     if (isVisible) {
-      document.body.style.overflow = 'hidden'
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = ''
+      document.body.style.overflow = '';
     }
   }
-)
+);
 </script>
 
 <style scoped>

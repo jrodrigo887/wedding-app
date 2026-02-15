@@ -6,9 +6,8 @@ import type {
   PhotoUploadData,
   PhotoUploadResponse,
   PhotoStats,
-  PhotoComment,
-  PhotoCommentForm,
-} from './entities'
+} from '@/entities/photo';
+import type { PhotoComment, PhotoCommentForm } from '@/entities/comment';
 
 /**
  * Interface: IPhotoRepository
@@ -17,35 +16,35 @@ import type {
  */
 export interface IPhotoRepository {
   // CRUD de Fotos
-  getApprovedPhotos(limit?: number, offset?: number): Promise<Photo[]>
-  getAllPhotos(): Promise<Photo[]>
-  getPendingPhotos(): Promise<Photo[]>
-  getPhotosByGuest(codigo: string): Promise<Photo[]>
-  getPhotoById(id: number): Promise<Photo | null>
-  uploadPhoto(data: PhotoUploadData): Promise<PhotoUploadResponse>
-  deletePhoto(id: number): Promise<void>
+  getApprovedPhotos(limit?: number, offset?: number): Promise<Photo[]>;
+  getAllPhotos(): Promise<Photo[]>;
+  getPendingPhotos(): Promise<Photo[]>;
+  getPhotosByGuest(codigo: string): Promise<Photo[]>;
+  getPhotoById(id: number): Promise<Photo | null>;
+  uploadPhoto(data: PhotoUploadData): Promise<PhotoUploadResponse>;
+  deletePhoto(id: number): Promise<void>;
 
   // Moderação
-  approvePhoto(id: number): Promise<void>
-  rejectPhoto(id: number): Promise<void>
-  bulkApprove(ids: number[]): Promise<void>
-  bulkReject(ids: number[]): Promise<void>
+  approvePhoto(id: number): Promise<void>;
+  rejectPhoto(id: number): Promise<void>;
+  bulkApprove(ids: number[]): Promise<void>;
+  bulkReject(ids: number[]): Promise<void>;
 
   // Likes
-  likePhoto(fotoId: number, codigoConvidado: string): Promise<void>
-  unlikePhoto(fotoId: number, codigoConvidado: string): Promise<void>
-  getPhotoLikes(fotoId: number): Promise<number>
-  hasUserLiked(fotoId: number, codigoConvidado: string): Promise<boolean>
+  likePhoto(fotoId: number, codigoConvidado: string): Promise<void>;
+  unlikePhoto(fotoId: number, codigoConvidado: string): Promise<void>;
+  getPhotoLikes(fotoId: number): Promise<number>;
+  hasUserLiked(fotoId: number, codigoConvidado: string): Promise<boolean>;
 
   // Comentários
-  getPhotoComments(fotoId: number): Promise<PhotoComment[]>
-  addComment(data: PhotoCommentForm): Promise<PhotoComment>
-  deleteComment(id: number): Promise<void>
+  getPhotoComments(fotoId: number): Promise<PhotoComment[]>;
+  addComment(data: PhotoCommentForm): Promise<PhotoComment>;
+  deleteComment(id: number): Promise<void>;
 
   // Estatísticas
-  getStats(): Promise<PhotoStats>
-  getGuestPhotoCount(codigo: string): Promise<number>
+  getStats(): Promise<PhotoStats>;
+  getGuestPhotoCount(codigo: string): Promise<number>;
 
   // Download
-  getPhotoDownloadUrls(): Promise<string[]>
+  getPhotoDownloadUrls(): Promise<string[]>;
 }

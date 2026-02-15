@@ -1,3 +1,1 @@
-export { default as GuestsStats } from './GuestsStats.vue';
-export { default as CheckinsList } from './CheckinsList.vue';
-export { default as GuestsTable } from './GuestsTable.vue';
+export { GuestsStats, CheckinsList, GuestsTable } from '@/features/guest-management';

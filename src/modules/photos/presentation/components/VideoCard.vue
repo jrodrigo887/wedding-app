@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Photo } from '../../domain/entities'
-import { formatDuration } from '../../infrastructure/services/videoCompressor'
-import LikeButton from './LikeButton.vue'
+import type { Photo } from '@/entities/photo';
+import { formatDuration } from '../../infrastructure/services/videoCompressor';
+import LikeButton from './LikeButton.vue';
 
 /**
  * Component: VideoCard
@@ -9,31 +9,34 @@ import LikeButton from './LikeButton.vue'
  */
 
 interface Props {
-  photo: Photo
-  currentUserCode?: string | null
+  photo: Photo;
+  currentUserCode?: string | null;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'like', id: number): void
-  (e: 'view', photo: Photo): void
-}>()
+  (e: 'like', id: number): void;
+  (e: 'view', photo: Photo): void;
+}>();
 
 const formatDate = (dateStr?: string): string => {
-  if (!dateStr) return ''
-  const date = new Date(dateStr)
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
   return date.toLocaleDateString('pt-BR', {
     day: '2-digit',
     month: 'short',
     hour: '2-digit',
     minute: '2-digit',
-  })
-}
+  });
+};
 </script>
 
 <template>
-  <div class="video-card" @click="emit('view', photo)">
+  <div
+    class="video-card"
+    @click="emit('view', photo)"
+  >
     <div class="video-card__image-wrapper">
       <!-- Thumbnail (poster) -->
       <img
@@ -46,14 +49,22 @@ const formatDate = (dateStr?: string): string => {
       <!-- Play overlay -->
       <div class="video-card__play-overlay">
         <span class="video-card__play-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="white">
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="white"
+          >
             <path d="M8 5v14l11-7z" />
           </svg>
         </span>
       </div>
 
       <!-- Duration badge -->
-      <div v-if="photo.duration" class="video-card__duration">
+      <div
+        v-if="photo.duration"
+        class="video-card__duration"
+      >
         {{ formatDuration(photo.duration) }}
       </div>
 
@@ -69,18 +80,27 @@ const formatDate = (dateStr?: string): string => {
         <span class="video-card__date">{{ formatDate(photo.created_at) }}</span>
       </div>
 
-      <p v-if="photo.caption" class="video-card__caption">
+      <p
+        v-if="photo.caption"
+        class="video-card__caption"
+      >
         {{ photo.caption }}
       </p>
 
-      <div class="video-card__actions" @click.stop>
+      <div
+        class="video-card__actions"
+        @click.stop
+      >
         <LikeButton
           :liked="photo.user_liked || false"
           :count="photo.likes_count || 0"
           :disabled="!currentUserCode"
           @toggle="emit('like', photo.id!)"
         />
-        <button class="video-card__comment-btn" @click="emit('view', photo)">
+        <button
+          class="video-card__comment-btn"
+          @click="emit('view', photo)"
+        >
           <span>💬</span>
           <span>{{ photo.comments_count || 0 }}</span>
         </button>
@@ -96,7 +116,9 @@ const formatDate = (dateStr?: string): string => {
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .video-card:hover {
@@ -144,7 +166,9 @@ const formatDate = (dateStr?: string): string => {
   justify-content: center;
   background: rgba(0, 0, 0, 0.5);
   border-radius: 50%;
-  transition: transform 0.2s, background 0.2s;
+  transition:
+    transform 0.2s,
+    background 0.2s;
 }
 
 .video-card:hover .video-card__play-icon {

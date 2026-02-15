@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import type { Photo } from '../../domain/entities';
+import type { Photo } from '@/entities/photo';
 import { usePhotosStore } from '../../infrastructure/stores';
 import { downloadSinglePhoto } from '../../infrastructure/services';
 import { formatDuration } from '../../infrastructure/services/videoCompressor';
@@ -28,7 +28,7 @@ const videoRef = ref<HTMLVideoElement | null>(null);
 
 const isVideo = computed(() => props.photo?.media_type === 'video');
 
-const mediaLabel = computed(() => isVideo.value ? 'Vídeo' : 'Foto');
+const mediaLabel = computed(() => (isVideo.value ? 'Vídeo' : 'Foto'));
 
 watch(
   () => props.photo,
@@ -92,8 +92,17 @@ const formatDate = (dateStr?: string): string => {
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="photo" class="photo-modal" @click.self="handleClose">
-        <button class="photo-modal__close" @click="handleClose">✕</button>
+      <div
+        v-if="photo"
+        class="photo-modal"
+        @click.self="handleClose"
+      >
+        <button
+          class="photo-modal__close"
+          @click="handleClose"
+        >
+          ✕
+        </button>
 
         <div class="photo-modal__content">
           <!-- Container de mídia -->
@@ -133,7 +142,10 @@ const formatDate = (dateStr?: string): string => {
                 </span>
               </div>
               <!-- Badge de tipo de mídia -->
-              <span class="photo-modal__media-badge" :class="{ 'photo-modal__media-badge--video': isVideo }">
+              <span
+                class="photo-modal__media-badge"
+                :class="{ 'photo-modal__media-badge--video': isVideo }"
+              >
                 {{ isVideo ? '🎥' : '📷' }} {{ mediaLabel }}
                 <template v-if="isVideo && photo.duration">
                   ({{ formatDuration(photo.duration) }})
@@ -142,7 +154,10 @@ const formatDate = (dateStr?: string): string => {
             </div>
 
             <!-- Caption -->
-            <p v-if="photo.caption" class="photo-modal__caption">
+            <p
+              v-if="photo.caption"
+              class="photo-modal__caption"
+            >
               {{ photo.caption }}
             </p>
 

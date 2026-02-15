@@ -1,21 +1,22 @@
-import { createRouter, createWebHistory, type RouteRecordRaw, type NavigationGuardNext, type RouteLocationNormalized } from 'vue-router'
-import { hasFeature } from '@/config/tenant'
-import type { TenantConfig } from '@/config/tenant'
+import {
+  createRouter,
+  createWebHistory,
+  type RouteRecordRaw,
+  type NavigationGuardNext,
+  type RouteLocationNormalized,
+} from 'vue-router';
+import { hasFeature } from '@shared/config/tenant';
+import type { TenantConfig } from '@shared/config/tenant';
 
 // Views públicas
-import HomePage from '@/views/HomePage.vue'
-import ChaCasaNovaPage from '@/views/ChaCasaNovaPage.vue'
+import HomePage from '@/views/HomePage.vue';
+import ChaCasaNovaPage from '@/views/ChaCasaNovaPage.vue';
 
 // Modules
-import { LoginPage, authGuard } from '@/modules/auth'
-import {
-  AdminLayout,
-  DashboardView,
-  GuestsView,
-  ContractsView,
-} from '@/modules/admin'
-import { RsvpView, CheckinView } from '@/modules/rsvp'
-import { PhotoFeedView, PhotoUploadView, AdminPhotosView } from '@/modules/photos'
+import { LoginPage, authGuard } from '@/modules/auth';
+import { AdminLayout, DashboardView, GuestsView, ContractsView } from '@/modules/admin';
+import { RsvpView, CheckinView } from '@/modules/rsvp';
+import { PhotoFeedView, PhotoUploadView, AdminPhotosView } from '@/modules/photos';
 
 /**
  * Guard para verificar se uma feature está habilitada
@@ -27,13 +28,13 @@ const featureGuard = (feature: keyof TenantConfig['features']) => {
     next: NavigationGuardNext
   ) => {
     if (hasFeature(feature)) {
-      next()
+      next();
     } else {
-      console.warn(`[Router] Feature "${feature}" não está habilitada para este tenant`)
-      next({ name: 'feature-not-available', query: { feature } })
+      console.warn(`[Router] Feature "${feature}" não está habilitada para este tenant`);
+      next({ name: 'feature-not-available', query: { feature } });
     }
-  }
-}
+  };
+};
 
 const routes: RouteRecordRaw[] = [
   // Rotas públicas
@@ -120,11 +121,11 @@ const routes: RouteRecordRaw[] = [
     path: '/:pathMatch(.*)*',
     redirect: '/',
   },
-]
+];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-})
+});
 
-export default router
+export default router;

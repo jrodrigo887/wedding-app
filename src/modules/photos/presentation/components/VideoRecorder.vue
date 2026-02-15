@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, onUnmounted, watch } from 'vue'
-import { useVideoUpload } from '../../infrastructure/composables/useVideoUpload'
-import { usePhotosStore } from '../../infrastructure/stores'
-import UploadProgress from './UploadProgress.vue'
+import { ref, onUnmounted, watch } from 'vue';
+import { useVideoUpload } from '../../infrastructure/composables/useVideoUpload';
+import { usePhotosStore } from '../../infrastructure/stores';
+import UploadProgress from './UploadProgress.vue';
 
 /**
  * Component: VideoRecorder
@@ -10,10 +10,10 @@ import UploadProgress from './UploadProgress.vue'
  */
 
 const emit = defineEmits<{
-  (e: 'uploaded'): void
-}>()
+  (e: 'uploaded'): void;
+}>();
 
-const store = usePhotosStore()
+const store = usePhotosStore();
 const {
   isRecording,
   recordingDuration,
@@ -33,83 +33,87 @@ const {
   uploadVideo,
   clearVideo,
   getMediaStream,
-} = useVideoUpload()
+} = useVideoUpload();
 
-const videoPreviewRef = ref<HTMLVideoElement | null>(null)
-const caption = ref('')
-const cameraActive = ref(false)
+const videoPreviewRef = ref<HTMLVideoElement | null>(null);
+const caption = ref('');
+const cameraActive = ref(false);
 
 // Conecta a stream ao elemento de vídeo quando gravando
-watch(isRecording, (recording) => {
+watch(isRecording, recording => {
   if (recording && videoPreviewRef.value) {
-    const stream = getMediaStream()
+    const stream = getMediaStream();
     if (stream) {
-      videoPreviewRef.value.srcObject = stream
-      videoPreviewRef.value.play()
+      videoPreviewRef.value.srcObject = stream;
+      videoPreviewRef.value.play();
     }
   } else if (!recording && videoPreviewRef.value) {
-    videoPreviewRef.value.srcObject = null
+    videoPreviewRef.value.srcObject = null;
   }
-})
+});
 
 const handleStartRecording = async () => {
-  cameraActive.value = true
-  const started = await startRecording()
+  cameraActive.value = true;
+  const started = await startRecording();
   if (!started) {
-    cameraActive.value = false
+    cameraActive.value = false;
   }
-}
+};
 
 const handleStopRecording = () => {
-  stopRecording()
-  cameraActive.value = false
-}
+  stopRecording();
+  cameraActive.value = false;
+};
 
 const handleCancelRecording = () => {
-  cancelRecording()
-  cameraActive.value = false
-}
+  cancelRecording();
+  cameraActive.value = false;
+};
 
 const handleDiscard = () => {
-  clearVideo()
-  caption.value = ''
-}
+  clearVideo();
+  caption.value = '';
+};
 
 const handleUpload = async () => {
-  const success = await uploadVideo(caption.value || undefined)
+  const success = await uploadVideo(caption.value || undefined);
   if (success) {
-    caption.value = ''
-    emit('uploaded')
+    caption.value = '';
+    emit('uploaded');
   }
-}
+};
 
 // Calcula a porcentagem de tempo
 const timePercentage = () => {
-  return (recordingDuration.value / 60) * 100
-}
+  return (recordingDuration.value / 60) * 100;
+};
 
 onUnmounted(() => {
   if (isRecording.value) {
-    cancelRecording()
+    cancelRecording();
   }
-})
+});
 </script>
 
 <template>
   <div class="video-recorder">
     <!-- Erro de suporte -->
-    <div v-if="!canRecord" class="video-recorder__error">
+    <div
+      v-if="!canRecord"
+      class="video-recorder__error"
+    >
       <span class="video-recorder__error-icon">!</span>
       <p>Seu navegador não suporta gravação de vídeo.</p>
-      <p class="video-recorder__error-hint">
-        Tente usar o Chrome, Firefox ou Safari mais recente.
-      </p>
+      <p class="video-recorder__error-hint">Tente usar o Chrome, Firefox ou Safari mais recente.</p>
     </div>
 
     <!-- Área de gravação/preview -->
     <template v-else>
       <!-- Preview durante gravação -->
-      <div v-if="cameraActive || isRecording" class="video-recorder__camera">
+      <div
+        v-if="cameraActive || isRecording"
+        class="video-recorder__camera"
+      >
         <video
           ref="videoPreviewRef"
           class="video-recorder__video"
@@ -119,7 +123,10 @@ onUnmounted(() => {
         ></video>
 
         <!-- Overlay de controles durante gravação -->
-        <div v-if="isRecording" class="video-recorder__overlay">
+        <div
+          v-if="isRecording"
+          class="video-recorder__overlay"
+        >
           <div class="video-recorder__timer">
             <span class="video-recorder__timer-dot"></span>
             <span>{{ recordingTimeFormatted }} / {{ maxTimeFormatted }}</span>
@@ -153,7 +160,10 @@ onUnmounted(() => {
       </div>
 
       <!-- Preview do vídeo gravado -->
-      <div v-else-if="hasVideo && previewUrl" class="video-recorder__preview">
+      <div
+        v-else-if="hasVideo && previewUrl"
+        class="video-recorder__preview"
+      >
         <video
           :src="previewUrl"
           :poster="posterUrl || undefined"
@@ -196,11 +206,18 @@ onUnmounted(() => {
         </div>
 
         <!-- Progress -->
-        <UploadProgress v-if="uploading" :progress="100" status="uploading" />
+        <UploadProgress
+          v-if="uploading"
+          :progress="100"
+          status="uploading"
+        />
       </div>
 
       <!-- Estado inicial - botão de gravar -->
-      <div v-else class="video-recorder__start">
+      <div
+        v-else
+        class="video-recorder__start"
+      >
         <button
           class="video-recorder__record-btn"
           :disabled="!store.canUploadMoreVideos"
@@ -209,19 +226,21 @@ onUnmounted(() => {
           <span class="video-recorder__record-icon"></span>
           Gravar Vídeo
         </button>
-        <p class="video-recorder__hint">
-          Máximo: 1 minuto
-        </p>
-        <p class="video-recorder__limit">
-          {{ store.currentGuestVideoCount }}/5 vídeos enviados
-        </p>
+        <p class="video-recorder__hint">Máximo: 1 minuto</p>
+        <p class="video-recorder__limit">{{ store.currentGuestVideoCount }}/5 vídeos enviados</p>
       </div>
 
       <!-- Erros -->
-      <p v-if="validationError" class="video-recorder__message video-recorder__message--error">
+      <p
+        v-if="validationError"
+        class="video-recorder__message video-recorder__message--error"
+      >
         {{ validationError }}
       </p>
-      <p v-if="uploadError" class="video-recorder__message video-recorder__message--error">
+      <p
+        v-if="uploadError"
+        class="video-recorder__message video-recorder__message--error"
+      >
         {{ uploadError }}
       </p>
     </template>
@@ -281,7 +300,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   padding: 1rem;
-  background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, transparent 100%);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, transparent 100%);
 }
 
 .video-recorder__timer {
@@ -302,14 +321,19 @@ onUnmounted(() => {
 }
 
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .video-recorder__progress-bar {
   margin-top: 0.5rem;
   height: 4px;
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -355,7 +379,7 @@ onUnmounted(() => {
 
 .video-recorder__cancel-btn {
   padding: 0.75rem 1.5rem;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
   color: white;
   border: none;
   border-radius: 9999px;
@@ -365,7 +389,7 @@ onUnmounted(() => {
 }
 
 .video-recorder__cancel-btn:hover {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .video-recorder__info {
@@ -455,7 +479,9 @@ onUnmounted(() => {
   font-size: 1.125rem;
   font-weight: 500;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .video-recorder__record-btn:hover:not(:disabled) {

@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import type { Photo } from '../../domain/entities';
+import type { Photo } from '@/entities/photo';
 import { storageService } from './storageService';
 
 /**
@@ -42,9 +42,7 @@ export async function downloadPhotosAsZip(
       const blob = await response.blob();
 
       // Gera nome do arquivo
-      const timestamp = photo.created_at
-        ? new Date(photo.created_at).getTime()
-        : Date.now();
+      const timestamp = photo.created_at ? new Date(photo.created_at).getTime() : Date.now();
       const extension = photo.mime_type?.split('/')[1] || 'jpg';
       const guestName = photo.nome_convidado.replace(/[^a-zA-Z0-9]/g, '_');
       const filename = `${guestName}_${timestamp}.${extension}`;

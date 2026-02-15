@@ -1,17 +1,17 @@
 // Theme System - Export available themes
-export const AVAILABLE_THEMES = ['default', 'elegant', 'modern'] as const
+export const AVAILABLE_THEMES = ['default', 'elegant', 'modern'] as const;
 
-export type ThemeName = (typeof AVAILABLE_THEMES)[number]
+export type ThemeName = (typeof AVAILABLE_THEMES)[number];
 
 export interface ThemeInfo {
-  id: ThemeName
-  name: string
-  description: string
+  id: ThemeName;
+  name: string;
+  description: string;
   preview: {
-    primary: string
-    secondary: string
-    background: string
-  }
+    primary: string;
+    secondary: string;
+    background: string;
+  };
 }
 
 export const THEMES: Record<ThemeName, ThemeInfo> = {
@@ -45,4 +45,4 @@ export const THEMES: Record<ThemeName, ThemeInfo> = {
       background: '#fafafa',
     },
   },
-}
+};

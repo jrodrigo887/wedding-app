@@ -24,7 +24,7 @@ const handleDownloadAll = async () => {
   downloadProgress.value = { current: 0, total: store.photos.length, percentage: 0 };
 
   try {
-    await downloadPhotosAsZip(store.photos, (progress) => {
+    await downloadPhotosAsZip(store.photos, progress => {
       downloadProgress.value = progress;
     });
   } catch (error) {
@@ -69,15 +69,14 @@ const handleDownloadAll = async () => {
         :disabled="downloading || store.photos.length === 0"
         @click="handleDownloadAll"
       >
-        <span v-if="downloading">
-          Baixando... {{ downloadProgress.percentage }}%
-        </span>
-        <span v-else>
-          ⬇️ Baixar todas as fotos (ZIP)
-        </span>
+        <span v-if="downloading"> Baixando... {{ downloadProgress.percentage }}% </span>
+        <span v-else> ⬇️ Baixar todas as fotos (ZIP) </span>
       </button>
 
-      <div v-if="downloading" class="admin-photos__progress">
+      <div
+        v-if="downloading"
+        class="admin-photos__progress"
+      >
         <div
           class="admin-photos__progress-bar"
           :style="{ width: downloadProgress.percentage + '%' }"

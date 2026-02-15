@@ -5,8 +5,8 @@ import type {
   ConfirmPresenceResponse,
   CheckinResponse,
   RsvpStats,
-} from '../../domain/entities';
-import { createEmptyRsvpStats } from '../../domain/entities';
+} from '@/entities/guest';
+import { createEmptyRsvpStats } from '@/entities/guest';
 import { rsvpRepository } from '../repositories';
 
 /**
@@ -75,9 +75,7 @@ export const useRsvpStore = defineStore('rsvp', () => {
       currentGuest.value = await rsvpRepository.getByCode(code);
     } catch (err) {
       error.value =
-        err instanceof Error
-          ? err.message
-          : 'Erro ao verificar código. Tente novamente.';
+        err instanceof Error ? err.message : 'Erro ao verificar código. Tente novamente.';
       throw err;
     } finally {
       loading.value = false;
@@ -98,9 +96,7 @@ export const useRsvpStore = defineStore('rsvp', () => {
       return result;
     } catch (err) {
       error.value =
-        err instanceof Error
-          ? err.message
-          : 'Erro ao confirmar presença. Tente novamente.';
+        err instanceof Error ? err.message : 'Erro ao confirmar presença. Tente novamente.';
       throw err;
     } finally {
       loading.value = false;
@@ -122,9 +118,7 @@ export const useRsvpStore = defineStore('rsvp', () => {
       return result;
     } catch (err) {
       error.value =
-        err instanceof Error
-          ? err.message
-          : 'Erro ao cancelar presença. Tente novamente.';
+        err instanceof Error ? err.message : 'Erro ao cancelar presença. Tente novamente.';
       throw err;
     } finally {
       loading.value = false;
@@ -143,9 +137,7 @@ export const useRsvpStore = defineStore('rsvp', () => {
       declined.value = true;
     } catch (err) {
       error.value =
-        err instanceof Error
-          ? err.message
-          : 'Erro ao registrar ausência. Tente novamente.';
+        err instanceof Error ? err.message : 'Erro ao registrar ausência. Tente novamente.';
       throw err;
     } finally {
       loading.value = false;
@@ -176,8 +168,7 @@ export const useRsvpStore = defineStore('rsvp', () => {
 
       return result;
     } catch (err) {
-      error.value =
-        err instanceof Error ? err.message : 'Erro ao registrar check-in';
+      error.value = err instanceof Error ? err.message : 'Erro ao registrar check-in';
       throw err;
     } finally {
       loading.value = false;
@@ -199,8 +190,7 @@ export const useRsvpStore = defineStore('rsvp', () => {
    * Busca estatísticas
    */
   const fetchStats = async (force = false): Promise<void> => {
-    if (!force && !shouldRefetch(lastFetchStats.value) && stats.value.total > 0)
-      return;
+    if (!force && !shouldRefetch(lastFetchStats.value) && stats.value.total > 0) return;
 
     try {
       stats.value = await rsvpRepository.getStats();
@@ -214,11 +204,7 @@ export const useRsvpStore = defineStore('rsvp', () => {
    * Busca convidados com check-in
    */
   const fetchCheckedIn = async (force = false): Promise<void> => {
-    if (
-      !force &&
-      !shouldRefetch(lastFetchCheckins.value) &&
-      checkedInGuests.value.length > 0
-    )
+    if (!force && !shouldRefetch(lastFetchCheckins.value) && checkedInGuests.value.length > 0)
       return;
 
     try {

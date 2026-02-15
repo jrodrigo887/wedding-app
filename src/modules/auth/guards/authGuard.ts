@@ -1,5 +1,5 @@
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
-import { supabase } from '@/services/supabase';
+import { supabase } from '@shared/lib/supabase';
 
 /**
  * Guard de autenticação para rotas protegidas

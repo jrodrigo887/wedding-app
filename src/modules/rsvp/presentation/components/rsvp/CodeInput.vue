@@ -28,7 +28,10 @@
       </button>
     </div>
 
-    <p v-if="error" class="code-input__error">
+    <p
+      v-if="error"
+      class="code-input__error"
+    >
       {{ error }}
     </p>
   </div>

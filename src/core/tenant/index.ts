@@ -7,4 +7,4 @@ export {
   isTenantDomain,
   type TenantResolutionStrategy,
   type TenantResolverConfig,
-} from './tenantResolver'
+} from './tenantResolver';

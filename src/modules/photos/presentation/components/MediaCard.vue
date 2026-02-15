@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Photo } from '../../domain/entities'
-import PhotoCard from './PhotoCard.vue'
-import VideoCard from './VideoCard.vue'
+import type { Photo } from '@/entities/photo';
+import PhotoCard from './PhotoCard.vue';
+import VideoCard from './VideoCard.vue';
 
 /**
  * Component: MediaCard
@@ -9,16 +9,16 @@ import VideoCard from './VideoCard.vue'
  */
 
 interface Props {
-  photo: Photo
-  currentUserCode?: string | null
+  photo: Photo;
+  currentUserCode?: string | null;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'like', id: number): void
-  (e: 'view', photo: Photo): void
-}>()
+  (e: 'like', id: number): void;
+  (e: 'view', photo: Photo): void;
+}>();
 </script>
 
 <template>

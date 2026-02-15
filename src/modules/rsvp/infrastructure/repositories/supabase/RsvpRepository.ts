@@ -1,46 +1,43 @@
-import { supabase } from '@/services/supabase'
-import type { IRsvpRepository } from '../../../domain/interfaces'
+import { supabase } from '@shared/lib/supabase';
+import type { IRsvpRepository } from '../../../domain/interfaces';
 import type {
   RsvpGuest,
   ConfirmPresenceResponse,
   CheckinResponse,
   RsvpStats,
   SendQRCodeEmailParams,
-} from '../../../domain/entities'
+} from '@/entities/guest';
 
 /**
  * Sincroniza dados com Google Apps Script (backup)
  */
-const syncToGoogleScript = async (
-  action: string,
-  data: Record<string, string>
-): Promise<void> => {
-  const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL
+const syncToGoogleScript = async (action: string, data: Record<string, string>): Promise<void> => {
+  const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
 
   if (!googleScriptUrl) {
-    console.log('[Google Script] URL não configurada, sincronização ignorada')
-    return
+    console.log('[Google Script] URL não configurada, sincronização ignorada');
+    return;
   }
 
   try {
-    const formData = new FormData()
-    formData.append('action', action)
+    const formData = new FormData();
+    formData.append('action', action);
     Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value)
-    })
+      formData.append(key, value);
+    });
 
     await fetch(googleScriptUrl, {
       method: 'POST',
       body: formData,
-    })
-    console.log(`[Google Script] Dados sincronizados: ${action}`)
+    });
+    console.log(`[Google Script] Dados sincronizados: ${action}`);
   } catch (error) {
     console.warn(
       '[Google Script] Erro ao sincronizar:',
       error instanceof Error ? error.message : error
-    )
+    );
   }
-}
+};
 
 /**
  * Repository: RsvpRepositorySupabase
@@ -48,16 +45,16 @@ const syncToGoogleScript = async (
  * Suporta multi-tenancy através do tenantId
  */
 export class RsvpRepositorySupabase implements IRsvpRepository {
-  private readonly TABLE = 'convidados'
-  readonly tenantId: string
+  private readonly TABLE = 'convidados';
+  readonly tenantId: string;
 
   constructor(tenantId: string) {
-    this.tenantId = tenantId
+    this.tenantId = tenantId;
   }
 
   async getByCode(code: string): Promise<RsvpGuest> {
     if (!code) {
-      throw new Error('Código não informado')
+      throw new Error('Código não informado');
     }
 
     const { data, error } = await supabase
@@ -65,24 +62,24 @@ export class RsvpRepositorySupabase implements IRsvpRepository {
       .select('*')
       .ilike('codigo', code)
       .eq('tenant_id', this.tenantId)
-      .single()
+      .single();
 
     if (error) {
       if (error.code === 'PGRST116') {
         throw new Error(
           'Código não encontrado na lista de convidados. Por favor, verifique com os noivos.'
-        )
+        );
       }
-      console.error('[RsvpRepositorySupabase] Erro ao verificar convidado:', error)
-      throw new Error(error.message)
+      console.error('[RsvpRepositorySupabase] Erro ao verificar convidado:', error);
+      throw new Error(error.message);
     }
 
-    return this.mapToRsvpGuest(data)
+    return this.mapToRsvpGuest(data);
   }
 
   async confirmPresence(code: string): Promise<ConfirmPresenceResponse> {
     if (!code) {
-      throw new Error('Código não informado')
+      throw new Error('Código não informado');
     }
 
     const { data: guest, error: fetchError } = await supabase
@@ -90,15 +87,15 @@ export class RsvpRepositorySupabase implements IRsvpRepository {
       .select('*')
       .ilike('codigo', code)
       .eq('tenant_id', this.tenantId)
-      .single()
+      .single();
 
     if (fetchError) {
       if (fetchError.code === 'PGRST116') {
         throw new Error(
           'Código não encontrado na lista de convidados. Por favor, verifique com os noivos.'
-        )
+        );
       }
-      throw new Error(fetchError.message)
+      throw new Error(fetchError.message);
     }
 
     const { error: updateError } = await supabase
@@ -108,19 +105,19 @@ export class RsvpRepositorySupabase implements IRsvpRepository {
         data_confirmacao: new Date().toISOString(),
       })
       .eq('id', guest.id)
-      .eq('tenant_id', this.tenantId)
+      .eq('tenant_id', this.tenantId);
 
     if (updateError) {
-      console.error('[RsvpRepositorySupabase] Erro ao confirmar presença:', updateError)
-      throw new Error(updateError.message)
+      console.error('[RsvpRepositorySupabase] Erro ao confirmar presença:', updateError);
+      throw new Error(updateError.message);
     }
 
-    let message = `Presença confirmada com sucesso, ${guest.nome}!`
+    let message = `Presença confirmada com sucesso, ${guest.nome}!`;
     if (guest.parceiro) {
-      message = `Presença confirmada com sucesso, ${guest.nome} e ${guest.parceiro}!`
+      message = `Presença confirmada com sucesso, ${guest.nome} e ${guest.parceiro}!`;
     }
 
-    syncToGoogleScript('confirmPresence', { code: guest.codigo })
+    syncToGoogleScript('confirmPresence', { code: guest.codigo });
 
     return {
       success: true,
@@ -132,12 +129,12 @@ export class RsvpRepositorySupabase implements IRsvpRepository {
         acompanhantes: guest.acompanhantes || 0,
         confirmado: true,
       },
-    }
+    };
   }
 
   async cancelPresence(code: string): Promise<ConfirmPresenceResponse> {
     if (!code) {
-      throw new Error('Código não informado')
+      throw new Error('Código não informado');
     }
 
     const { data: guest, error: fetchError } = await supabase
@@ -145,15 +142,15 @@ export class RsvpRepositorySupabase implements IRsvpRepository {
       .select('*')
       .ilike('codigo', code)
       .eq('tenant_id', this.tenantId)
-      .single()
+      .single();
 
     if (fetchError) {
       if (fetchError.code === 'PGRST116') {
         throw new Error(
           'Código não encontrado na lista de convidados. Por favor, verifique com os noivos.'
-        )
+        );
       }
-      throw new Error(fetchError.message)
+      throw new Error(fetchError.message);
     }
 
     const { error: updateError } = await supabase
@@ -163,19 +160,19 @@ export class RsvpRepositorySupabase implements IRsvpRepository {
         data_confirmacao: new Date().toISOString(),
       })
       .eq('id', guest.id)
-      .eq('tenant_id', this.tenantId)
+      .eq('tenant_id', this.tenantId);
 
     if (updateError) {
-      console.error('[RsvpRepositorySupabase] Erro ao cancelar presença:', updateError)
-      throw new Error(updateError.message)
+      console.error('[RsvpRepositorySupabase] Erro ao cancelar presença:', updateError);
+      throw new Error(updateError.message);
     }
 
-    let message = `Presença cancelada com sucesso, ${guest.nome}!`
+    let message = `Presença cancelada com sucesso, ${guest.nome}!`;
     if (guest.parceiro) {
-      message = `Presença cancelada com sucesso, ${guest.nome} e ${guest.parceiro}!`
+      message = `Presença cancelada com sucesso, ${guest.nome} e ${guest.parceiro}!`;
     }
 
-    syncToGoogleScript('cancelPresence', { code: guest.codigo })
+    syncToGoogleScript('cancelPresence', { code: guest.codigo });
 
     return {
       success: true,
@@ -187,12 +184,12 @@ export class RsvpRepositorySupabase implements IRsvpRepository {
         acompanhantes: guest.acompanhantes || 0,
         confirmado: false,
       },
-    }
+    };
   }
 
   async registerCheckin(code: string): Promise<CheckinResponse> {
     if (!code) {
-      throw new Error('Código não informado')
+      throw new Error('Código não informado');
     }
 
     const { data: guest, error: fetchError } = await supabase
@@ -200,13 +197,13 @@ export class RsvpRepositorySupabase implements IRsvpRepository {
       .select('*')
       .ilike('codigo', code)
       .eq('tenant_id', this.tenantId)
-      .single()
+      .single();
 
     if (fetchError) {
       if (fetchError.code === 'PGRST116') {
-        throw new Error('Código não encontrado na lista de convidados')
+        throw new Error('Código não encontrado na lista de convidados');
       }
-      throw new Error(fetchError.message)
+      throw new Error(fetchError.message);
     }
 
     if (guest.checkin) {
@@ -215,17 +212,15 @@ export class RsvpRepositorySupabase implements IRsvpRepository {
             hour: '2-digit',
             minute: '2-digit',
           })
-        : ''
-      throw new Error(
-        `Check-in já realizado${horarioAnterior ? ' às ' + horarioAnterior : ''}`
-      )
+        : '';
+      throw new Error(`Check-in já realizado${horarioAnterior ? ' às ' + horarioAnterior : ''}`);
     }
 
-    const now = new Date()
+    const now = new Date();
     const hora = now.toLocaleTimeString('pt-BR', {
       hour: '2-digit',
       minute: '2-digit',
-    })
+    });
 
     const { error: updateError } = await supabase
       .from(this.TABLE)
@@ -234,25 +229,25 @@ export class RsvpRepositorySupabase implements IRsvpRepository {
         horario_entrada: now.toISOString(),
       })
       .eq('id', guest.id)
-      .eq('tenant_id', this.tenantId)
+      .eq('tenant_id', this.tenantId);
 
     if (updateError) {
-      console.error('[RsvpRepositorySupabase] Erro ao registrar check-in:', updateError)
-      throw new Error(updateError.message)
+      console.error('[RsvpRepositorySupabase] Erro ao registrar check-in:', updateError);
+      throw new Error(updateError.message);
     }
 
-    let message = `Check-in realizado para ${guest.nome}!`
+    let message = `Check-in realizado para ${guest.nome}!`;
     if (guest.parceiro) {
-      message = `Check-in realizado para ${guest.nome} e ${guest.parceiro}!`
+      message = `Check-in realizado para ${guest.nome} e ${guest.parceiro}!`;
     }
 
-    syncToGoogleScript('registerCheckin', { code: guest.codigo })
+    syncToGoogleScript('registerCheckin', { code: guest.codigo });
 
     return {
       success: true,
       message,
       horario: hora,
-    }
+    };
   }
 
   async getCheckinCount(): Promise<number> {
@@ -260,14 +255,14 @@ export class RsvpRepositorySupabase implements IRsvpRepository {
       .from(this.TABLE)
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', this.tenantId)
-      .eq('checkin', true)
+      .eq('checkin', true);
 
     if (error) {
-      console.error('[RsvpRepositorySupabase] Erro ao buscar contagem de check-ins:', error)
-      return 0
+      console.error('[RsvpRepositorySupabase] Erro ao buscar contagem de check-ins:', error);
+      return 0;
     }
 
-    return count || 0
+    return count || 0;
   }
 
   async getStats(): Promise<RsvpStats> {
@@ -286,18 +281,18 @@ export class RsvpRepositorySupabase implements IRsvpRepository {
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', this.tenantId)
         .eq('checkin', true),
-    ])
+    ]);
 
-    const total = totalResult.count || 0
-    const confirmed = confirmedResult.count || 0
-    const checkedIn = checkedInResult.count || 0
+    const total = totalResult.count || 0;
+    const confirmed = confirmedResult.count || 0;
+    const checkedIn = checkedInResult.count || 0;
 
     return {
       total,
       confirmed,
       pending: total - confirmed,
       checkedIn,
-    }
+    };
   }
 
   async getCheckedInGuests(): Promise<RsvpGuest[]> {
@@ -306,25 +301,25 @@ export class RsvpRepositorySupabase implements IRsvpRepository {
       .select('*')
       .eq('tenant_id', this.tenantId)
       .eq('checkin', true)
-      .order('horario_entrada', { ascending: false })
+      .order('horario_entrada', { ascending: false });
 
     if (error) {
-      console.error('[RsvpRepositorySupabase] Erro ao buscar check-ins:', error)
-      return []
+      console.error('[RsvpRepositorySupabase] Erro ao buscar check-ins:', error);
+      return [];
     }
 
-    return (data || []).map((item) => this.mapToRsvpGuest(item))
+    return (data || []).map(item => this.mapToRsvpGuest(item));
   }
 
   async sendQRCodeEmail(
     params: SendQRCodeEmailParams
   ): Promise<{ success: boolean; error?: string }> {
-    const { code, email, name } = params
-    const emailApiUrl = import.meta.env.VITE_EMAIL_API_URL
+    const { code, email, name } = params;
+    const emailApiUrl = import.meta.env.VITE_EMAIL_API_URL;
 
     if (!emailApiUrl) {
-      console.error('[RsvpRepositorySupabase] URL da API de email não configurada')
-      throw new Error('Serviço de email não configurado')
+      console.error('[RsvpRepositorySupabase] URL da API de email não configurada');
+      throw new Error('Serviço de email não configurado');
     }
 
     try {
@@ -334,18 +329,18 @@ export class RsvpRepositorySupabase implements IRsvpRepository {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ code, email, name }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Erro ao enviar email')
+        throw new Error(data.error || 'Erro ao enviar email');
       }
 
-      return data
+      return data;
     } catch (error) {
-      console.error('[RsvpRepositorySupabase] Erro ao enviar email:', error)
-      throw new Error(error instanceof Error ? error.message : 'Erro ao enviar email')
+      console.error('[RsvpRepositorySupabase] Erro ao enviar email:', error);
+      throw new Error(error instanceof Error ? error.message : 'Erro ao enviar email');
     }
   }
 
@@ -363,6 +358,6 @@ export class RsvpRepositorySupabase implements IRsvpRepository {
       checkin: (data.checkin as boolean) || false,
       entrada_confirmada: (data.checkin as boolean) || false,
       horario_entrada: (data.horario_entrada as string) || '',
-    }
+    };
   }
 }

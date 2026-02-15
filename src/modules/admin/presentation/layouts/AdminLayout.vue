@@ -18,10 +18,18 @@
       </nav>
 
       <div class="admin-header__actions">
-        <BaseButton variant="ghost" size="sm" @click="handleRefresh">
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          @click="handleRefresh"
+        >
           Atualizar
         </BaseButton>
-        <BaseButton variant="ghost" size="sm" @click="handleLogout">
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          @click="handleLogout"
+        >
           Sair
         </BaseButton>
       </div>
@@ -62,11 +70,7 @@ const isActive = (path: string): boolean => {
 };
 
 const handleRefresh = async () => {
-  await Promise.all([
-    guestsStore.refresh(),
-    contractsStore.refresh(),
-    photosStore.fetchStats(),
-  ]);
+  await Promise.all([guestsStore.refresh(), contractsStore.refresh(), photosStore.fetchStats()]);
 };
 
 const handleLogout = async () => {

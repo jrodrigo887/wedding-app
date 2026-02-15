@@ -2,7 +2,11 @@
   <div class="contracts-view">
     <header class="contracts-view__header">
       <h1 class="contracts-view__title">Contratos</h1>
-      <BaseButton variant="success" size="sm" @click="openModal()">
+      <BaseButton
+        variant="success"
+        size="sm"
+        @click="openModal()"
+      >
         + Novo Contrato
       </BaseButton>
     </header>
@@ -43,17 +47,22 @@
       <p class="contracts-view__delete-message">
         Deseja realmente excluir o contrato de
         <strong>{{
-          deletingContract?.empresa ||
-          deletingContract?.responsavel ||
-          'sem nome'
+          deletingContract?.empresa || deletingContract?.responsavel || 'sem nome'
         }}</strong
         >?
       </p>
       <template #footer>
-        <BaseButton variant="secondary" @click="showDeleteModal = false">
+        <BaseButton
+          variant="secondary"
+          @click="showDeleteModal = false"
+        >
           Cancelar
         </BaseButton>
-        <BaseButton variant="danger" :loading="deleting" @click="handleDelete">
+        <BaseButton
+          variant="danger"
+          :loading="deleting"
+          @click="handleDelete"
+        >
           Excluir
         </BaseButton>
       </template>
@@ -63,15 +72,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useContractsStore } from '../../infrastructure/stores';
-import type { Contract, ContractForm as ContractFormType } from '../../domain/entities';
-import {
-  ContractsStats,
-  ContractsTable,
-  ContractFormComponent,
-  BaseModal,
-  BaseButton,
-} from '../components';
+import type { Contract, ContractForm as ContractFormType } from '@/entities/contract';
+import { useContractsStore, ContractsStats, ContractsTable, ContractFormComponent } from '@/features/contract-management';
+import { BaseModal, BaseButton } from '@shared/ui';
 
 const contractsStore = useContractsStore();
 
@@ -110,8 +113,7 @@ const handleSave = async (form: ContractFormType) => {
     }
     closeModal();
   } catch (err) {
-    formError.value =
-      err instanceof Error ? err.message : 'Erro ao salvar contrato';
+    formError.value = err instanceof Error ? err.message : 'Erro ao salvar contrato';
   } finally {
     saving.value = false;
   }

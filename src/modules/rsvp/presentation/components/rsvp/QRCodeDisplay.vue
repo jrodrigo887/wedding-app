@@ -1,15 +1,19 @@
 <template>
   <div class="qrcode-display">
     <h3 class="qrcode-display__title">Seu QR Code para Check-in</h3>
-    <p class="qrcode-display__subtitle">
-      Apresente este código na entrada do evento
-    </p>
+    <p class="qrcode-display__subtitle">Apresente este código na entrada do evento</p>
 
-    <div v-if="loading" class="qrcode-display__loading">
+    <div
+      v-if="loading"
+      class="qrcode-display__loading"
+    >
       Gerando QR Code...
     </div>
 
-    <div v-else-if="dataUrl" class="qrcode-display__image-container">
+    <div
+      v-else-if="dataUrl"
+      class="qrcode-display__image-container"
+    >
       <img
         :src="dataUrl"
         alt="QR Code para check-in"
@@ -29,7 +33,10 @@
     </div>
 
     <!-- Email Section -->
-    <div v-if="showEmailForm && !emailSent" class="qrcode-display__email">
+    <div
+      v-if="showEmailForm && !emailSent"
+      class="qrcode-display__email"
+    >
       <p class="qrcode-display__email-label">Receber QR Code por email:</p>
       <div class="qrcode-display__email-form">
         <input
@@ -49,12 +56,18 @@
           <span v-else>Enviar</span>
         </button>
       </div>
-      <p v-if="emailError" class="qrcode-display__email-error">
+      <p
+        v-if="emailError"
+        class="qrcode-display__email-error"
+      >
         {{ emailError }}
       </p>
     </div>
 
-    <div v-if="emailSent" class="qrcode-display__email-success">
+    <div
+      v-if="emailSent"
+      class="qrcode-display__email-success"
+    >
       QR Code enviado para {{ props.email }}
     </div>
   </div>
@@ -78,7 +91,7 @@ const props = withDefaults(
   }>(),
   {
     email: '',
-  },
+  }
 );
 
 defineEmits<{

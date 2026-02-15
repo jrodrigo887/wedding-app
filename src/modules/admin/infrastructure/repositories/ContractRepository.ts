@@ -1,6 +1,6 @@
-import { supabase } from '@/services/supabase';
+import { supabase } from '@shared/lib/supabase';
 import type { IContractRepository } from '../../domain/interfaces';
-import type { Contract, ContractForm } from '../../domain/entities';
+import type { Contract, ContractForm } from '@/entities/contract';
 
 /**
  * Repository: ContractRepository
@@ -25,11 +25,7 @@ export class ContractRepository implements IContractRepository {
   }
 
   async getById(id: number): Promise<Contract | null> {
-    const { data, error } = await supabase
-      .from(this.TABLE)
-      .select('*')
-      .eq('id', id)
-      .single();
+    const { data, error } = await supabase.from(this.TABLE).select('*').eq('id', id).single();
 
     if (error) {
       if (error.code === 'PGRST116') return null;

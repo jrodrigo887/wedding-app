@@ -6,15 +6,26 @@
       @click.self="$emit('close')"
     >
       <div class="rsvp-modal">
-        <div v-if="icon" class="rsvp-modal__icon">{{ icon }}</div>
+        <div
+          v-if="icon"
+          class="rsvp-modal__icon"
+        >
+          {{ icon }}
+        </div>
         <h3 class="rsvp-modal__title">{{ title }}</h3>
         <p class="rsvp-modal__message">
           <slot name="message"></slot>
         </p>
-        <div v-if="$slots.warning" class="rsvp-modal__warning">
+        <div
+          v-if="$slots.warning"
+          class="rsvp-modal__warning"
+        >
           <slot name="warning"></slot>
         </div>
-        <div v-if="$slots.info" class="rsvp-modal__info">
+        <div
+          v-if="$slots.info"
+          class="rsvp-modal__info"
+        >
           <slot name="info"></slot>
         </div>
         <div class="rsvp-modal__actions">

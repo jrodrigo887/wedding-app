@@ -1,15 +1,14 @@
-import { supabase } from '@/services/supabase';
+import { supabase } from '@shared/lib/supabase';
 import type { IPhotoRepository } from '../../domain/interfaces';
 import type {
   Photo,
   PhotoUploadData,
   PhotoUploadResponse,
   PhotoStats,
-  PhotoComment,
-  PhotoCommentForm,
   MediaUploadData,
   GuestMediaCount,
-} from '../../domain/entities';
+} from '@/entities/photo';
+import type { PhotoComment, PhotoCommentForm } from '@/entities/comment';
 import { storageService, compressImage } from '../services';
 
 /**
@@ -79,10 +78,7 @@ export class PhotoRepository implements IPhotoRepository {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error(
-        '[PhotoRepository] Erro ao buscar fotos do convidado:',
-        error
-      );
+      console.error('[PhotoRepository] Erro ao buscar fotos do convidado:', error);
       throw new Error(error.message);
     }
 
@@ -90,11 +86,7 @@ export class PhotoRepository implements IPhotoRepository {
   }
 
   async getPhotoById(id: number): Promise<Photo | null> {
-    const { data, error } = await supabase
-      .from(this.TABLE)
-      .select('*')
-      .eq('id', id)
-      .single();
+    const { data, error } = await supabase.from(this.TABLE).select('*').eq('id', id).single();
 
     if (error) {
       if (error.code === 'PGRST116') return null;
@@ -108,9 +100,7 @@ export class PhotoRepository implements IPhotoRepository {
   async uploadPhoto(uploadData: PhotoUploadData): Promise<PhotoUploadResponse> {
     console.log('repository upload.');
 
-    const currentCount = await this.getGuestPhotoCount(
-      uploadData.codigo_convidado
-    );
+    const currentCount = await this.getGuestPhotoCount(uploadData.codigo_convidado);
     if (currentCount >= this.MAX_PHOTOS_PER_GUEST) {
       return {
         success: false,
@@ -269,10 +259,7 @@ export class PhotoRepository implements IPhotoRepository {
     return count || 0;
   }
 
-  async hasUserLiked(
-    fotoId: number,
-    codigoConvidado: string
-  ): Promise<boolean> {
+  async hasUserLiked(fotoId: number, codigoConvidado: string): Promise<boolean> {
     const { data, error } = await supabase
       .from(this.LIKES_TABLE)
       .select('id')
@@ -325,10 +312,7 @@ export class PhotoRepository implements IPhotoRepository {
   }
 
   async deleteComment(id: number): Promise<void> {
-    const { error } = await supabase
-      .from(this.COMMENTS_TABLE)
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from(this.COMMENTS_TABLE).delete().eq('id', id);
 
     if (error) {
       console.error('[PhotoRepository] Erro ao deletar comentário:', error);
@@ -342,16 +326,9 @@ export class PhotoRepository implements IPhotoRepository {
     const [totalResult, approvedResult, likesResult, commentsResult, photosResult, videosResult] =
       await Promise.all([
         supabase.from(this.TABLE).select('*', { count: 'exact', head: true }),
-        supabase
-          .from(this.TABLE)
-          .select('*', { count: 'exact', head: true })
-          .eq('aprovado', true),
-        supabase
-          .from(this.LIKES_TABLE)
-          .select('*', { count: 'exact', head: true }),
-        supabase
-          .from(this.COMMENTS_TABLE)
-          .select('*', { count: 'exact', head: true }),
+        supabase.from(this.TABLE).select('*', { count: 'exact', head: true }).eq('aprovado', true),
+        supabase.from(this.LIKES_TABLE).select('*', { count: 'exact', head: true }),
+        supabase.from(this.COMMENTS_TABLE).select('*', { count: 'exact', head: true }),
         supabase
           .from(this.TABLE)
           .select('*', { count: 'exact', head: true })
@@ -384,10 +361,7 @@ export class PhotoRepository implements IPhotoRepository {
       .eq('media_type', 'photo');
 
     if (error) {
-      console.error(
-        '[PhotoRepository] Erro ao contar fotos do convidado:',
-        error
-      );
+      console.error('[PhotoRepository] Erro ao contar fotos do convidado:', error);
       return 0;
     }
 
@@ -493,7 +467,7 @@ export class PhotoRepository implements IPhotoRepository {
 
   async getPhotoDownloadUrls(): Promise<string[]> {
     const photos = await this.getApprovedPhotos(1000);
-    return photos.map((photo) => photo.public_url || '').filter(Boolean);
+    return photos.map(photo => photo.public_url || '').filter(Boolean);
   }
 
   // ========== MÉTODOS PRIVADOS ==========
@@ -504,9 +478,7 @@ export class PhotoRepository implements IPhotoRepository {
   private shouldAutoApprove(): boolean {
     const weddingDateStr = import.meta.env.VITE_WEDDING_DATE;
     if (!weddingDateStr) {
-      console.warn(
-        '[PhotoRepository] VITE_WEDDING_DATE não definido, usando moderação'
-      );
+      console.warn('[PhotoRepository] VITE_WEDDING_DATE não definido, usando moderação');
       return false;
     }
 
@@ -551,7 +523,7 @@ export class PhotoRepository implements IPhotoRepository {
    * Mapeia array de dados para array de Photos
    */
   private mapPhotosWithUrls(data: Record<string, unknown>[]): Photo[] {
-    return data.map((item) => this.mapPhotoWithUrl(item));
+    return data.map(item => this.mapPhotoWithUrl(item));
   }
 }
 

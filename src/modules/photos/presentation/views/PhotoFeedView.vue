@@ -5,9 +5,7 @@
       <div class="photo-feed-view__topbar-inner">
         <div class="photo-feed-view__brand">
           <h1 class="photo-feed-view__title">Galeria de Fotos</h1>
-          <p class="photo-feed-view__subtitle">
-            Momentos especiais do nosso grande dia
-          </p>
+          <p class="photo-feed-view__subtitle">Momentos especiais do nosso grande dia</p>
         </div>
 
         <!-- Lado direito: ações do usuário -->
@@ -30,14 +28,13 @@
 
             <!-- Dropdown do usuário -->
             <Transition name="dropdown">
-              <div v-if="showDropdown" class="photo-feed-view__dropdown">
+              <div
+                v-if="showDropdown"
+                class="photo-feed-view__dropdown"
+              >
                 <div class="photo-feed-view__dropdown-header">
-                  <span class="photo-feed-view__dropdown-name">{{
-                    store.currentGuestName
-                  }}</span>
-                  <span class="photo-feed-view__dropdown-code">{{
-                    store.currentGuestCode
-                  }}</span>
+                  <span class="photo-feed-view__dropdown-name">{{ store.currentGuestName }}</span>
+                  <span class="photo-feed-view__dropdown-code">{{ store.currentGuestCode }}</span>
                 </div>
                 <button
                   class="photo-feed-view__dropdown-item"
@@ -93,7 +90,10 @@
           >
             &times;
           </button>
-          <p v-if="identifyError" class="photo-feed-view__error">
+          <p
+            v-if="identifyError"
+            class="photo-feed-view__error"
+          >
             {{ identifyError }}
           </p>
         </div>
@@ -115,17 +115,20 @@
     </div>
 
     <!-- Modal -->
-    <PhotoModal :photo="selectedPhoto" @close="handleCloseModal" />
+    <PhotoModal
+      :photo="selectedPhoto"
+      @close="handleCloseModal"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { supabase } from '@/services/supabase';
+import { supabase } from '@shared/lib/supabase';
 import { usePhotosStore } from '../../infrastructure/stores';
 import { PhotoFeed, PhotoModal } from '../components';
-import type { Photo } from '../../domain/entities';
+import type { Photo } from '@/entities/photo';
 
 /**
  * View: PhotoFeedView

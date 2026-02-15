@@ -5,4 +5,4 @@ export {
   createRsvpRepository,
   createPhotoRepository,
   clearRepositoryCache,
-} from './repositoryFactory'
+} from './repositoryFactory';

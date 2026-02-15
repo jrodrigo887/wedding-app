@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { PhotoComment } from '../../domain/entities';
-import CommentItem from './CommentItem.vue';
+import type { PhotoComment } from '@/entities/comment';
+import { CommentItem } from '@/entities/comment';
 
 /**
  * Component: CommentSection
@@ -46,15 +46,24 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 <template>
   <div class="comment-section">
-    <div v-if="loading" class="comment-section__loading">
+    <div
+      v-if="loading"
+      class="comment-section__loading"
+    >
       Carregando comentários...
     </div>
 
-    <div v-else-if="comments.length === 0" class="comment-section__empty">
+    <div
+      v-else-if="comments.length === 0"
+      class="comment-section__empty"
+    >
       Nenhum comentário ainda
     </div>
 
-    <div v-else class="comment-section__list">
+    <div
+      v-else
+      class="comment-section__list"
+    >
       <CommentItem
         v-for="comment in comments"
         :key="comment.id"
@@ -64,7 +73,10 @@ const handleKeydown = (event: KeyboardEvent) => {
       />
     </div>
 
-    <form class="comment-section__form" @submit.prevent="handleSubmit">
+    <form
+      class="comment-section__form"
+      @submit.prevent="handleSubmit"
+    >
       <input
         v-model="newComment"
         type="text"

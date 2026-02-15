@@ -32,7 +32,10 @@
 
     <div class="guests-view__content">
       <!-- Overview Tab -->
-      <div v-if="activeTab === 'overview'" class="guests-view__card">
+      <div
+        v-if="activeTab === 'overview'"
+        class="guests-view__card"
+      >
         <ProgressBar
           label="Taxa de Confirmação"
           :value="guestsStore.confirmationRate"
@@ -46,7 +49,10 @@
       </div>
 
       <!-- Lista Tab -->
-      <div v-if="activeTab === 'lista'" class="guests-view__card">
+      <div
+        v-if="activeTab === 'lista'"
+        class="guests-view__card"
+      >
         <GuestsTable
           :guests="guestsStore.guests"
           :loading="guestsStore.loading"
@@ -54,7 +60,10 @@
       </div>
 
       <!-- Checkins Tab -->
-      <div v-if="activeTab === 'checkins'" class="guests-view__card">
+      <div
+        v-if="activeTab === 'checkins'"
+        class="guests-view__card"
+      >
         <CheckinsList
           :guests="guestsStore.checkedInGuests"
           :loading="guestsStore.loading"
@@ -66,8 +75,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useGuestsStore } from '../../infrastructure/stores';
-import { GuestsStats, CheckinsList, GuestsTable, ProgressBar } from '../components';
+import { useGuestsStore, GuestsStats, CheckinsList, GuestsTable } from '@/features/guest-management';
+import { ProgressBar } from '@shared/ui';
 
 const guestsStore = useGuestsStore();
 const activeTab = ref<'overview' | 'lista' | 'checkins'>('overview');

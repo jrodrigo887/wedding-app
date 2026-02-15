@@ -1,4 +1,4 @@
-import { supabase } from '@/services/supabase';
+import { supabase } from '@shared/lib/supabase';
 import type { IRsvpRepository } from '../../domain/interfaces';
 import type {
   RsvpGuest,
@@ -6,15 +6,12 @@ import type {
   CheckinResponse,
   RsvpStats,
   SendQRCodeEmailParams,
-} from '../../domain/entities';
+} from '@/entities/guest';
 
 /**
  * Sincroniza dados com Google Apps Script (backup)
  */
-const syncToGoogleScript = async (
-  action: string,
-  data: Record<string, string>,
-): Promise<void> => {
+const syncToGoogleScript = async (action: string, data: Record<string, string>): Promise<void> => {
   const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
 
   if (!googleScriptUrl) {
@@ -37,7 +34,7 @@ const syncToGoogleScript = async (
   } catch (error) {
     console.warn(
       '[Google Script] Erro ao sincronizar:',
-      error instanceof Error ? error.message : error,
+      error instanceof Error ? error.message : error
     );
   }
 };
@@ -64,7 +61,7 @@ export class RsvpRepository implements IRsvpRepository {
     if (error) {
       if (error.code === 'PGRST116') {
         throw new Error(
-          'Código não encontrado na lista de convidados. Por favor, verifique com os noivos.',
+          'Código não encontrado na lista de convidados. Por favor, verifique com os noivos.'
         );
       }
       console.error('[RsvpRepository] Erro ao verificar convidado:', error);
@@ -88,7 +85,7 @@ export class RsvpRepository implements IRsvpRepository {
     if (fetchError) {
       if (fetchError.code === 'PGRST116') {
         throw new Error(
-          'Código não encontrado na lista de convidados. Por favor, verifique com os noivos.',
+          'Código não encontrado na lista de convidados. Por favor, verifique com os noivos.'
         );
       }
       throw new Error(fetchError.message);
@@ -141,7 +138,7 @@ export class RsvpRepository implements IRsvpRepository {
     if (fetchError) {
       if (fetchError.code === 'PGRST116') {
         throw new Error(
-          'Código não encontrado na lista de convidados. Por favor, verifique com os noivos.',
+          'Código não encontrado na lista de convidados. Por favor, verifique com os noivos.'
         );
       }
       throw new Error(fetchError.message);
@@ -205,9 +202,7 @@ export class RsvpRepository implements IRsvpRepository {
             minute: '2-digit',
           })
         : '';
-      throw new Error(
-        `Check-in já realizado${horarioAnterior ? ' às ' + horarioAnterior : ''}`,
-      );
+      throw new Error(`Check-in já realizado${horarioAnterior ? ' às ' + horarioAnterior : ''}`);
     }
 
     const now = new Date();
@@ -260,14 +255,8 @@ export class RsvpRepository implements IRsvpRepository {
   async getStats(): Promise<RsvpStats> {
     const [totalResult, confirmedResult, checkedInResult] = await Promise.all([
       supabase.from(this.TABLE).select('*', { count: 'exact', head: true }),
-      supabase
-        .from(this.TABLE)
-        .select('*', { count: 'exact', head: true })
-        .eq('confirmado', true),
-      supabase
-        .from(this.TABLE)
-        .select('*', { count: 'exact', head: true })
-        .eq('checkin', true),
+      supabase.from(this.TABLE).select('*', { count: 'exact', head: true }).eq('confirmado', true),
+      supabase.from(this.TABLE).select('*', { count: 'exact', head: true }).eq('checkin', true),
     ]);
 
     const total = totalResult.count || 0;
@@ -294,11 +283,11 @@ export class RsvpRepository implements IRsvpRepository {
       return [];
     }
 
-    return (data || []).map((item) => this.mapToRsvpGuest(item));
+    return (data || []).map(item => this.mapToRsvpGuest(item));
   }
 
   async sendQRCodeEmail(
-    params: SendQRCodeEmailParams,
+    params: SendQRCodeEmailParams
   ): Promise<{ success: boolean; error?: string }> {
     const { code, email, name } = params;
     const emailApiUrl = import.meta.env.VITE_EMAIL_API_URL;
@@ -326,9 +315,7 @@ export class RsvpRepository implements IRsvpRepository {
       return data;
     } catch (error) {
       console.error('[RsvpRepository] Erro ao enviar email:', error);
-      throw new Error(
-        error instanceof Error ? error.message : 'Erro ao enviar email',
-      );
+      throw new Error(error instanceof Error ? error.message : 'Erro ao enviar email');
     }
   }
 

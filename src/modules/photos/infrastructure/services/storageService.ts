@@ -1,4 +1,4 @@
-import { supabase } from '@/services/supabase';
+import { supabase } from '@shared/lib/supabase';
 
 const BUCKET_NAME = 'wedding-photos';
 
@@ -9,7 +9,11 @@ export const storageService = {
   /**
    * Faz upload de uma foto para o Storage
    */
-  async uploadPhoto(file: File | Blob, codigoConvidado: string, originalName?: string): Promise<string> {
+  async uploadPhoto(
+    file: File | Blob,
+    codigoConvidado: string,
+    originalName?: string
+  ): Promise<string> {
     const timestamp = Date.now();
     const uuid = crypto.randomUUID();
     const name = originalName || (file instanceof File ? file.name : 'photo.jpg');
@@ -17,12 +21,10 @@ export const storageService = {
     const fileName = `${timestamp}_${uuid}.${extension}`;
     const storagePath = `${codigoConvidado}/${fileName}`;
 
-    const { error } = await supabase.storage
-      .from(BUCKET_NAME)
-      .upload(storagePath, file, {
-        cacheControl: '3600',
-        upsert: false,
-      });
+    const { error } = await supabase.storage.from(BUCKET_NAME).upload(storagePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+    });
 
     if (error) {
       console.error('[StorageService] Erro ao fazer upload:', error);
@@ -35,7 +37,11 @@ export const storageService = {
   /**
    * Faz upload de um vídeo para o Storage
    */
-  async uploadVideo(file: File | Blob, codigoConvidado: string, originalName?: string): Promise<string> {
+  async uploadVideo(
+    file: File | Blob,
+    codigoConvidado: string,
+    originalName?: string
+  ): Promise<string> {
     const timestamp = Date.now();
     const uuid = crypto.randomUUID();
     const name = originalName || (file instanceof File ? file.name : 'video.mp4');
@@ -43,12 +49,10 @@ export const storageService = {
     const fileName = `${timestamp}_${uuid}.${extension}`;
     const storagePath = `${codigoConvidado}/videos/${fileName}`;
 
-    const { error } = await supabase.storage
-      .from(BUCKET_NAME)
-      .upload(storagePath, file, {
-        cacheControl: '3600',
-        upsert: false,
-      });
+    const { error } = await supabase.storage.from(BUCKET_NAME).upload(storagePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+    });
 
     if (error) {
       console.error('[StorageService] Erro ao fazer upload de vídeo:', error);
@@ -68,13 +72,11 @@ export const storageService = {
     const fileName = `${baseName}_${timestamp}_${uuid}_poster.jpg`;
     const storagePath = `${codigoConvidado}/thumbnails/${fileName}`;
 
-    const { error } = await supabase.storage
-      .from(BUCKET_NAME)
-      .upload(storagePath, blob, {
-        cacheControl: '3600',
-        upsert: false,
-        contentType: 'image/jpeg',
-      });
+    const { error } = await supabase.storage.from(BUCKET_NAME).upload(storagePath, blob, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: 'image/jpeg',
+    });
 
     if (error) {
       console.error('[StorageService] Erro ao fazer upload do poster:', error);
@@ -88,9 +90,7 @@ export const storageService = {
    * Obtém a URL pública de uma foto
    */
   getPublicUrl(storagePath: string): string {
-    const { data } = supabase.storage
-      .from(BUCKET_NAME)
-      .getPublicUrl(storagePath);
+    const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(storagePath);
 
     return data.publicUrl;
   },
@@ -99,9 +99,7 @@ export const storageService = {
    * Deleta uma foto do Storage
    */
   async deletePhoto(storagePath: string): Promise<void> {
-    const { error } = await supabase.storage
-      .from(BUCKET_NAME)
-      .remove([storagePath]);
+    const { error } = await supabase.storage.from(BUCKET_NAME).remove([storagePath]);
 
     if (error) {
       console.error('[StorageService] Erro ao deletar foto:', error);
@@ -115,9 +113,7 @@ export const storageService = {
   async deletePhotos(storagePaths: string[]): Promise<void> {
     if (storagePaths.length === 0) return;
 
-    const { error } = await supabase.storage
-      .from(BUCKET_NAME)
-      .remove(storagePaths);
+    const { error } = await supabase.storage.from(BUCKET_NAME).remove(storagePaths);
 
     if (error) {
       console.error('[StorageService] Erro ao deletar fotos:', error);
@@ -129,16 +125,14 @@ export const storageService = {
    * Lista todas as fotos de um convidado
    */
   async listGuestPhotos(codigoConvidado: string): Promise<string[]> {
-    const { data, error } = await supabase.storage
-      .from(BUCKET_NAME)
-      .list(codigoConvidado);
+    const { data, error } = await supabase.storage.from(BUCKET_NAME).list(codigoConvidado);
 
     if (error) {
       console.error('[StorageService] Erro ao listar fotos:', error);
       return [];
     }
 
-    return (data || []).map((file) => `${codigoConvidado}/${file.name}`);
+    return (data || []).map(file => `${codigoConvidado}/${file.name}`);
   },
 };
 

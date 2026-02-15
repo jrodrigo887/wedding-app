@@ -26,7 +26,10 @@
     <section class="dashboard__section">
       <div class="dashboard__section-header">
         <h2 class="dashboard__section-title">Últimos Check-ins</h2>
-        <router-link to="/admin/convidados" class="dashboard__link">
+        <router-link
+          to="/admin/convidados"
+          class="dashboard__link"
+        >
           Ver todos
         </router-link>
       </div>

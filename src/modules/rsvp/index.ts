@@ -1,5 +1,5 @@
 // Domain
-export * from './domain/entities';
+export * from '@/entities/guest';
 export * from './domain/interfaces';
 
 // Infrastructure

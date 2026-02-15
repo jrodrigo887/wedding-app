@@ -42,17 +42,14 @@ export function usePhotoUpload() {
   /**
    * Faz upload com compressão
    */
-  const uploadWithCompression = async (
-    file: File,
-    caption?: string
-  ): Promise<boolean> => {
+  const uploadWithCompression = async (file: File, caption?: string): Promise<boolean> => {
     compressing.value = true;
     compressionProgress.value = 0;
 
     try {
       // Comprime a imagem
       const result = await compressImage(file, {
-        onProgress: (progress) => {
+        onProgress: progress => {
           compressionProgress.value = progress;
         },
       });

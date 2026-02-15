@@ -1,6 +1,6 @@
-import { supabase } from '@/services/supabase';
+import { supabase } from '@shared/lib/supabase';
 import type { IGuestRepository } from '../../domain/interfaces';
-import type { Guest, GuestStats } from '../../domain/entities';
+import type { Guest, GuestStats } from '@/entities/guest';
 
 /**
  * Repository: GuestRepository
@@ -25,11 +25,7 @@ export class GuestRepository implements IGuestRepository {
   }
 
   async getById(id: number): Promise<Guest | null> {
-    const { data, error } = await supabase
-      .from(this.TABLE)
-      .select('*')
-      .eq('id', id)
-      .single();
+    const { data, error } = await supabase.from(this.TABLE).select('*').eq('id', id).single();
 
     if (error) {
       if (error.code === 'PGRST116') return null;
@@ -57,14 +53,8 @@ export class GuestRepository implements IGuestRepository {
   async getStats(): Promise<GuestStats> {
     const [totalResult, confirmedResult, checkedInResult] = await Promise.all([
       supabase.from(this.TABLE).select('*', { count: 'exact', head: true }),
-      supabase
-        .from(this.TABLE)
-        .select('*', { count: 'exact', head: true })
-        .eq('confirmado', true),
-      supabase
-        .from(this.TABLE)
-        .select('*', { count: 'exact', head: true })
-        .eq('checkin', true),
+      supabase.from(this.TABLE).select('*', { count: 'exact', head: true }).eq('confirmado', true),
+      supabase.from(this.TABLE).select('*', { count: 'exact', head: true }).eq('checkin', true),
     ]);
 
     const total = totalResult.count || 0;
@@ -134,7 +124,7 @@ export class GuestRepository implements IGuestRepository {
   }
 
   private mapToGuests(data: Record<string, unknown>[]): Guest[] {
-    return data.map((item) => this.mapToGuest(item));
+    return data.map(item => this.mapToGuest(item));
   }
 }
 

@@ -1,8 +1,9 @@
 import { ref, onMounted, onUnmounted } from 'vue';
-import { supabase } from '@/services/supabase';
+import { supabase } from '@shared/lib/supabase';
 import { usePhotosStore } from '../stores';
 import { storageService } from '../services';
-import type { Photo, PhotoComment } from '../../domain/entities';
+import type { Photo } from '@/entities/photo';
+import type { PhotoComment } from '@/entities/comment';
 
 /**
  * Composable: usePhotoRealtime
@@ -28,7 +29,7 @@ export function usePhotoRealtime() {
           schema: 'public',
           table: 'fotos',
         },
-        (payload) => {
+        payload => {
           const newPhoto = payload.new as Record<string, unknown>;
           const storagePath = newPhoto.storage_path as string;
           const posterPath = newPhoto.poster_path as string | undefined;
@@ -64,7 +65,7 @@ export function usePhotoRealtime() {
           schema: 'public',
           table: 'fotos',
         },
-        (payload) => {
+        payload => {
           const updatedPhoto = payload.new as Record<string, unknown>;
           const storagePath = updatedPhoto.storage_path as string;
           const posterPath = updatedPhoto.poster_path as string | undefined;
@@ -97,7 +98,7 @@ export function usePhotoRealtime() {
           schema: 'public',
           table: 'foto_likes',
         },
-        (payload) => {
+        payload => {
           const like = payload.new as { foto_id: number };
           store.handleNewLike(like.foto_id);
         }
@@ -110,12 +111,12 @@ export function usePhotoRealtime() {
           schema: 'public',
           table: 'foto_comentarios',
         },
-        (payload) => {
+        payload => {
           const comment = payload.new as PhotoComment;
           store.handleNewComment(comment.foto_id, comment);
         }
       )
-      .subscribe((status) => {
+      .subscribe(status => {
         isConnected.value = status === 'SUBSCRIBED';
         console.log('[PhotoRealtime] Status:', status);
       });

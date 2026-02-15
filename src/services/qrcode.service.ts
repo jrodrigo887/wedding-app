@@ -22,10 +22,7 @@ export const qrcodeService = {
   /**
    * Gera um QR Code como Data URL (base64)
    */
-  async generateQRCode(
-    code: string,
-    options: QRCodeOptions = {}
-  ): Promise<string> {
+  async generateQRCode(code: string, options: QRCodeOptions = {}): Promise<string> {
     const defaultOptions: QRCodeInternalOptions = {
       width: options.width ?? 300,
       margin: options.margin ?? 2,

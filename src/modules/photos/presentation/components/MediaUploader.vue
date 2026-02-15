@@ -1,29 +1,29 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { usePhotosStore } from '../../infrastructure/stores'
-import PhotoUploader from './PhotoUploader.vue'
-import VideoUploader from './VideoUploader.vue'
-import VideoRecorder from './VideoRecorder.vue'
+import { ref } from 'vue';
+import { usePhotosStore } from '../../infrastructure/stores';
+import PhotoUploader from './PhotoUploader.vue';
+import VideoUploader from './VideoUploader.vue';
+import VideoRecorder from './VideoRecorder.vue';
 
 /**
  * Component: MediaUploader
  * Interface unificada para upload de fotos e vídeos
  */
 
-type TabType = 'photo' | 'video' | 'record'
+type TabType = 'photo' | 'video' | 'record';
 
-const store = usePhotosStore()
-const activeTab = ref<TabType>('photo')
+const store = usePhotosStore();
+const activeTab = ref<TabType>('photo');
 
 const tabs = [
   { id: 'photo' as const, label: 'Foto', icon: '📷' },
   { id: 'video' as const, label: 'Vídeo', icon: '🎬' },
   { id: 'record' as const, label: 'Gravar', icon: '🔴' },
-]
+];
 
 const handleUploaded = () => {
   // Pode adicionar lógica adicional após upload bem-sucedido
-}
+};
 </script>
 
 <template>
@@ -58,8 +58,14 @@ const handleUploaded = () => {
     <!-- Conteúdo da tab ativa -->
     <div class="media-uploader__content">
       <PhotoUploader v-if="activeTab === 'photo'" />
-      <VideoUploader v-else-if="activeTab === 'video'" @uploaded="handleUploaded" />
-      <VideoRecorder v-else-if="activeTab === 'record'" @uploaded="handleUploaded" />
+      <VideoUploader
+        v-else-if="activeTab === 'video'"
+        @uploaded="handleUploaded"
+      />
+      <VideoRecorder
+        v-else-if="activeTab === 'record'"
+        @uploaded="handleUploaded"
+      />
     </div>
 
     <!-- Status de moderação -->

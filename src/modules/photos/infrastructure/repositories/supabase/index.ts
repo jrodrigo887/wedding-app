@@ -1,2 +1,2 @@
 // Photos Repositories - Supabase Implementation
-export { PhotoRepositorySupabase } from './PhotoRepository'
+export { PhotoRepositorySupabase } from './PhotoRepository';

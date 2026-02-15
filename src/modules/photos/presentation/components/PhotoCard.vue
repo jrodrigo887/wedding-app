@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Photo } from '../../domain/entities';
+import type { Photo } from '@/entities/photo';
 import LikeButton from './LikeButton.vue';
 
 /**
@@ -32,7 +32,10 @@ const formatDate = (dateStr?: string): string => {
 </script>
 
 <template>
-  <div class="photo-card" @click="emit('view', photo)">
+  <div
+    class="photo-card"
+    @click="emit('view', photo)"
+  >
     <div class="photo-card__image-wrapper">
       <img
         :src="photo.public_url"
@@ -51,18 +54,27 @@ const formatDate = (dateStr?: string): string => {
         <span class="photo-card__date">{{ formatDate(photo.created_at) }}</span>
       </div>
 
-      <p v-if="photo.caption" class="photo-card__caption">
+      <p
+        v-if="photo.caption"
+        class="photo-card__caption"
+      >
         {{ photo.caption }}
       </p>
 
-      <div class="photo-card__actions" @click.stop>
+      <div
+        class="photo-card__actions"
+        @click.stop
+      >
         <LikeButton
           :liked="photo.user_liked || false"
           :count="photo.likes_count || 0"
           :disabled="!currentUserCode"
           @toggle="emit('like', photo.id!)"
         />
-        <button class="photo-card__comment-btn" @click="emit('view', photo)">
+        <button
+          class="photo-card__comment-btn"
+          @click="emit('view', photo)"
+        >
           <span>💬</span>
           <span>{{ photo.comments_count || 0 }}</span>
         </button>
@@ -76,15 +88,21 @@ const formatDate = (dateStr?: string): string => {
   background: white;
   border-radius: 0.875rem;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(0, 0, 0, 0.04);
   cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .photo-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 .photo-card__image-wrapper {
@@ -109,11 +127,7 @@ const formatDate = (dateStr?: string): string => {
 .photo-card__overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.35) 0%,
-    transparent 50%
-  );
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.35) 0%, transparent 50%);
   display: flex;
   align-items: center;
   justify-content: center;

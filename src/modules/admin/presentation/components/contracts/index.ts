@@ -1,3 +1,1 @@
-export { default as ContractsStats } from './ContractsStats.vue';
-export { default as ContractsTable } from './ContractsTable.vue';
-export { default as ContractFormComponent } from './ContractForm.vue';
+export { ContractsStats, ContractsTable, ContractFormComponent } from '@/features/contract-management';

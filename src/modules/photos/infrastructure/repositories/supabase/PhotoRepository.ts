@@ -1,16 +1,15 @@
-import { supabase } from '@/services/supabase'
-import type { IPhotoRepository } from '../../../domain/interfaces'
+import { supabase } from '@shared/lib/supabase';
+import type { IPhotoRepository } from '../../../domain/interfaces';
 import type {
   Photo,
   PhotoUploadData,
   PhotoUploadResponse,
   PhotoStats,
-  PhotoComment,
-  PhotoCommentForm,
   MediaUploadData,
   GuestMediaCount,
-} from '../../../domain/entities'
-import { storageService, compressImage } from '../../services'
+} from '@/entities/photo';
+import type { PhotoComment, PhotoCommentForm } from '@/entities/comment';
+import { storageService, compressImage } from '../../services';
 
 /**
  * Repository: PhotoRepositorySupabase
@@ -18,15 +17,15 @@ import { storageService, compressImage } from '../../services'
  * Suporta multi-tenancy através do tenantId
  */
 export class PhotoRepositorySupabase implements IPhotoRepository {
-  private readonly TABLE = 'fotos'
-  private readonly LIKES_TABLE = 'foto_likes'
-  private readonly COMMENTS_TABLE = 'foto_comentarios'
-  private readonly MAX_PHOTOS_PER_GUEST = 20
-  private readonly MAX_VIDEOS_PER_GUEST = 5
-  readonly tenantId: string
+  private readonly TABLE = 'fotos';
+  private readonly LIKES_TABLE = 'foto_likes';
+  private readonly COMMENTS_TABLE = 'foto_comentarios';
+  private readonly MAX_PHOTOS_PER_GUEST = 20;
+  private readonly MAX_VIDEOS_PER_GUEST = 5;
+  readonly tenantId: string;
 
   constructor(tenantId: string) {
-    this.tenantId = tenantId
+    this.tenantId = tenantId;
   }
 
   // ========== CRUD DE FOTOS ==========
@@ -38,14 +37,14 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       .eq('tenant_id', this.tenantId)
       .eq('aprovado', true)
       .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1)
+      .range(offset, offset + limit - 1);
 
     if (error) {
-      console.error('[PhotoRepositorySupabase] Erro ao buscar fotos aprovadas:', error)
-      throw new Error(error.message)
+      console.error('[PhotoRepositorySupabase] Erro ao buscar fotos aprovadas:', error);
+      throw new Error(error.message);
     }
 
-    return this.mapPhotosWithUrls(data || [])
+    return this.mapPhotosWithUrls(data || []);
   }
 
   async getAllPhotos(): Promise<Photo[]> {
@@ -53,14 +52,14 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       .from(this.TABLE)
       .select('*')
       .eq('tenant_id', this.tenantId)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('[PhotoRepositorySupabase] Erro ao buscar todas as fotos:', error)
-      throw new Error(error.message)
+      console.error('[PhotoRepositorySupabase] Erro ao buscar todas as fotos:', error);
+      throw new Error(error.message);
     }
 
-    return this.mapPhotosWithUrls(data || [])
+    return this.mapPhotosWithUrls(data || []);
   }
 
   async getPendingPhotos(): Promise<Photo[]> {
@@ -69,14 +68,14 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       .select('*')
       .eq('tenant_id', this.tenantId)
       .eq('aprovado', false)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('[PhotoRepositorySupabase] Erro ao buscar fotos pendentes:', error)
-      throw new Error(error.message)
+      console.error('[PhotoRepositorySupabase] Erro ao buscar fotos pendentes:', error);
+      throw new Error(error.message);
     }
 
-    return this.mapPhotosWithUrls(data || [])
+    return this.mapPhotosWithUrls(data || []);
   }
 
   async getPhotosByGuest(codigo: string): Promise<Photo[]> {
@@ -85,14 +84,14 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       .select('*')
       .eq('tenant_id', this.tenantId)
       .ilike('codigo_convidado', codigo)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('[PhotoRepositorySupabase] Erro ao buscar fotos do convidado:', error)
-      throw new Error(error.message)
+      console.error('[PhotoRepositorySupabase] Erro ao buscar fotos do convidado:', error);
+      throw new Error(error.message);
     }
 
-    return this.mapPhotosWithUrls(data || [])
+    return this.mapPhotosWithUrls(data || []);
   }
 
   async getPhotoById(id: number): Promise<Photo | null> {
@@ -101,40 +100,40 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       .select('*')
       .eq('id', id)
       .eq('tenant_id', this.tenantId)
-      .single()
+      .single();
 
     if (error) {
-      if (error.code === 'PGRST116') return null
-      console.error('[PhotoRepositorySupabase] Erro ao buscar foto:', error)
-      throw new Error(error.message)
+      if (error.code === 'PGRST116') return null;
+      console.error('[PhotoRepositorySupabase] Erro ao buscar foto:', error);
+      throw new Error(error.message);
     }
 
-    return this.mapPhotoWithUrl(data)
+    return this.mapPhotoWithUrl(data);
   }
 
   async uploadPhoto(uploadData: PhotoUploadData): Promise<PhotoUploadResponse> {
-    console.log('repository upload.')
+    console.log('repository upload.');
 
-    const currentCount = await this.getGuestPhotoCount(uploadData.codigo_convidado)
+    const currentCount = await this.getGuestPhotoCount(uploadData.codigo_convidado);
     if (currentCount >= this.MAX_PHOTOS_PER_GUEST) {
       return {
         success: false,
         message: `Limite de ${this.MAX_PHOTOS_PER_GUEST} fotos atingido`,
-      }
+      };
     }
 
     try {
       // 1. Comprime a imagem
-      const { file: compressedFile } = await compressImage(uploadData.file)
+      const { file: compressedFile } = await compressImage(uploadData.file);
 
       // 2. Faz upload para o Storage
       const storagePath = await storageService.uploadPhoto(
         compressedFile,
         uploadData.codigo_convidado
-      )
+      );
 
       // 3. Verifica se deve auto-aprovar
-      const shouldAutoApprove = this.shouldAutoApprove()
+      const shouldAutoApprove = this.shouldAutoApprove();
 
       // 4. Insere no banco
       const { data, error } = await supabase
@@ -152,15 +151,15 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
           media_type: 'photo',
         })
         .select()
-        .single()
+        .single();
 
       if (error) {
         // Rollback: deleta arquivo do storage
-        await storageService.deletePhoto(storagePath)
-        throw new Error(error.message)
+        await storageService.deletePhoto(storagePath);
+        throw new Error(error.message);
       }
 
-      const photo = this.mapPhotoWithUrl(data)
+      const photo = this.mapPhotoWithUrl(data);
 
       return {
         success: true,
@@ -168,36 +167,33 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
           ? 'Foto enviada com sucesso!'
           : 'Foto enviada! Aguardando aprovação.',
         photo,
-      }
+      };
     } catch (err) {
-      console.error('[PhotoRepositorySupabase] Erro ao fazer upload:', err)
+      console.error('[PhotoRepositorySupabase] Erro ao fazer upload:', err);
       return {
         success: false,
         message: err instanceof Error ? err.message : 'Erro ao enviar foto',
-      }
+      };
     }
   }
 
   async uploadVideo(uploadData: MediaUploadData): Promise<PhotoUploadResponse> {
-    console.log('repository video upload.')
+    console.log('repository video upload.');
 
-    const mediaCount = await this.getGuestMediaCount(uploadData.codigo_convidado)
+    const mediaCount = await this.getGuestMediaCount(uploadData.codigo_convidado);
     if (mediaCount.videos >= this.MAX_VIDEOS_PER_GUEST) {
       return {
         success: false,
         message: `Limite de ${this.MAX_VIDEOS_PER_GUEST} vídeos atingido`,
-      }
+      };
     }
 
-    let storagePath: string | null = null
-    let posterPath: string | null = null
+    let storagePath: string | null = null;
+    let posterPath: string | null = null;
 
     try {
       // 1. Faz upload do vídeo
-      storagePath = await storageService.uploadVideo(
-        uploadData.file,
-        uploadData.codigo_convidado
-      )
+      storagePath = await storageService.uploadVideo(uploadData.file, uploadData.codigo_convidado);
 
       // 2. Faz upload do poster (se disponível)
       if (uploadData.posterBlob) {
@@ -205,11 +201,11 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
           uploadData.posterBlob,
           uploadData.codigo_convidado,
           uploadData.file.name
-        )
+        );
       }
 
       // 3. Verifica se deve auto-aprovar
-      const shouldAutoApprove = this.shouldAutoApprove()
+      const shouldAutoApprove = this.shouldAutoApprove();
 
       // 4. Insere no banco
       const { data, error } = await supabase
@@ -229,16 +225,16 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
           poster_path: posterPath,
         })
         .select()
-        .single()
+        .single();
 
       if (error) {
         // Rollback: deleta arquivos do storage
-        if (storagePath) await storageService.deletePhoto(storagePath)
-        if (posterPath) await storageService.deletePhoto(posterPath)
-        throw new Error(error.message)
+        if (storagePath) await storageService.deletePhoto(storagePath);
+        if (posterPath) await storageService.deletePhoto(posterPath);
+        throw new Error(error.message);
       }
 
-      const photo = this.mapPhotoWithUrl(data)
+      const photo = this.mapPhotoWithUrl(data);
 
       return {
         success: true,
@@ -246,20 +242,28 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
           ? 'Vídeo enviado com sucesso!'
           : 'Vídeo enviado! Aguardando aprovação.',
         photo,
-      }
+      };
     } catch (err) {
-      console.error('[PhotoRepositorySupabase] Erro ao fazer upload de vídeo:', err)
+      console.error('[PhotoRepositorySupabase] Erro ao fazer upload de vídeo:', err);
       // Cleanup em caso de erro
       if (storagePath) {
-        try { await storageService.deletePhoto(storagePath) } catch { /* ignore */ }
+        try {
+          await storageService.deletePhoto(storagePath);
+        } catch {
+          /* ignore */
+        }
       }
       if (posterPath) {
-        try { await storageService.deletePhoto(posterPath) } catch { /* ignore */ }
+        try {
+          await storageService.deletePhoto(posterPath);
+        } catch {
+          /* ignore */
+        }
       }
       return {
         success: false,
         message: err instanceof Error ? err.message : 'Erro ao enviar vídeo',
-      }
+      };
     }
   }
 
@@ -268,33 +272,35 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       .from(this.TABLE)
       .select('media_type')
       .eq('tenant_id', this.tenantId)
-      .ilike('codigo_convidado', codigo)
+      .ilike('codigo_convidado', codigo);
 
     if (error) {
-      console.error('[PhotoRepositorySupabase] Erro ao contar mídia do convidado:', error)
-      return { photos: 0, videos: 0 }
+      console.error('[PhotoRepositorySupabase] Erro ao contar mídia do convidado:', error);
+      return { photos: 0, videos: 0 };
     }
 
-    const photos = (data || []).filter((item) => item.media_type === 'photo' || !item.media_type).length
-    const videos = (data || []).filter((item) => item.media_type === 'video').length
+    const photos = (data || []).filter(
+      item => item.media_type === 'photo' || !item.media_type
+    ).length;
+    const videos = (data || []).filter(item => item.media_type === 'video').length;
 
-    return { photos, videos }
+    return { photos, videos };
   }
 
   async deletePhoto(id: number): Promise<void> {
     // Busca a foto para obter o storage_path
-    const photo = await this.getPhotoById(id)
+    const photo = await this.getPhotoById(id);
     if (!photo) {
-      throw new Error('Foto não encontrada')
+      throw new Error('Foto não encontrada');
     }
 
     // Deleta do Storage
-    await storageService.deletePhoto(photo.storage_path)
+    await storageService.deletePhoto(photo.storage_path);
 
     // Deleta o poster se existir (para vídeos)
     if (photo.poster_path) {
       try {
-        await storageService.deletePhoto(photo.poster_path)
+        await storageService.deletePhoto(photo.poster_path);
       } catch {
         // Ignora erro ao deletar poster
       }
@@ -305,11 +311,11 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       .from(this.TABLE)
       .delete()
       .eq('id', id)
-      .eq('tenant_id', this.tenantId)
+      .eq('tenant_id', this.tenantId);
 
     if (error) {
-      console.error('[PhotoRepositorySupabase] Erro ao deletar foto:', error)
-      throw new Error(error.message)
+      console.error('[PhotoRepositorySupabase] Erro ao deletar foto:', error);
+      throw new Error(error.message);
     }
   }
 
@@ -320,54 +326,52 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       .from(this.TABLE)
       .update({ aprovado: true, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('tenant_id', this.tenantId)
+      .eq('tenant_id', this.tenantId);
 
     if (error) {
-      console.error('[PhotoRepositorySupabase] Erro ao aprovar foto:', error)
-      throw new Error(error.message)
+      console.error('[PhotoRepositorySupabase] Erro ao aprovar foto:', error);
+      throw new Error(error.message);
     }
   }
 
   async rejectPhoto(id: number): Promise<void> {
-    await this.deletePhoto(id)
+    await this.deletePhoto(id);
   }
 
   async bulkApprove(ids: number[]): Promise<void> {
-    if (ids.length === 0) return
+    if (ids.length === 0) return;
 
     const { error } = await supabase
       .from(this.TABLE)
       .update({ aprovado: true, updated_at: new Date().toISOString() })
       .eq('tenant_id', this.tenantId)
-      .in('id', ids)
+      .in('id', ids);
 
     if (error) {
-      console.error('[PhotoRepositorySupabase] Erro ao aprovar fotos em lote:', error)
-      throw new Error(error.message)
+      console.error('[PhotoRepositorySupabase] Erro ao aprovar fotos em lote:', error);
+      throw new Error(error.message);
     }
   }
 
   async bulkReject(ids: number[]): Promise<void> {
     for (const id of ids) {
-      await this.deletePhoto(id)
+      await this.deletePhoto(id);
     }
   }
 
   // ========== LIKES ==========
 
   async likePhoto(fotoId: number, codigoConvidado: string): Promise<void> {
-    const { error } = await supabase
-      .from(this.LIKES_TABLE)
-      .insert({
-        foto_id: fotoId,
-        codigo_convidado: codigoConvidado,
-        tenant_id: this.tenantId,
-      })
+    const { error } = await supabase.from(this.LIKES_TABLE).insert({
+      foto_id: fotoId,
+      codigo_convidado: codigoConvidado,
+      tenant_id: this.tenantId,
+    });
 
     // Ignora erro de constraint única (já curtiu)
     if (error && error.code !== '23505') {
-      console.error('[PhotoRepositorySupabase] Erro ao curtir foto:', error)
-      throw new Error(error.message)
+      console.error('[PhotoRepositorySupabase] Erro ao curtir foto:', error);
+      throw new Error(error.message);
     }
   }
 
@@ -377,11 +381,11 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       .delete()
       .eq('foto_id', fotoId)
       .eq('codigo_convidado', codigoConvidado)
-      .eq('tenant_id', this.tenantId)
+      .eq('tenant_id', this.tenantId);
 
     if (error) {
-      console.error('[PhotoRepositorySupabase] Erro ao descurtir foto:', error)
-      throw new Error(error.message)
+      console.error('[PhotoRepositorySupabase] Erro ao descurtir foto:', error);
+      throw new Error(error.message);
     }
   }
 
@@ -390,14 +394,14 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       .from(this.LIKES_TABLE)
       .select('*', { count: 'exact', head: true })
       .eq('foto_id', fotoId)
-      .eq('tenant_id', this.tenantId)
+      .eq('tenant_id', this.tenantId);
 
     if (error) {
-      console.error('[PhotoRepositorySupabase] Erro ao buscar likes:', error)
-      return 0
+      console.error('[PhotoRepositorySupabase] Erro ao buscar likes:', error);
+      return 0;
     }
 
-    return count || 0
+    return count || 0;
   }
 
   async hasUserLiked(fotoId: number, codigoConvidado: string): Promise<boolean> {
@@ -407,13 +411,13 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       .eq('foto_id', fotoId)
       .eq('codigo_convidado', codigoConvidado)
       .eq('tenant_id', this.tenantId)
-      .single()
+      .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('[PhotoRepositorySupabase] Erro ao verificar like:', error)
+      console.error('[PhotoRepositorySupabase] Erro ao verificar like:', error);
     }
 
-    return !!data
+    return !!data;
   }
 
   // ========== COMENTÁRIOS ==========
@@ -424,14 +428,14 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       .select('*')
       .eq('foto_id', fotoId)
       .eq('tenant_id', this.tenantId)
-      .order('created_at', { ascending: true })
+      .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('[PhotoRepositorySupabase] Erro ao buscar comentários:', error)
-      throw new Error(error.message)
+      console.error('[PhotoRepositorySupabase] Erro ao buscar comentários:', error);
+      throw new Error(error.message);
     }
 
-    return data || []
+    return data || [];
   }
 
   async addComment(commentData: PhotoCommentForm): Promise<PhotoComment> {
@@ -445,14 +449,14 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
         tenant_id: this.tenantId,
       })
       .select()
-      .single()
+      .single();
 
     if (error) {
-      console.error('[PhotoRepositorySupabase] Erro ao adicionar comentário:', error)
-      throw new Error(error.message)
+      console.error('[PhotoRepositorySupabase] Erro ao adicionar comentário:', error);
+      throw new Error(error.message);
     }
 
-    return data
+    return data;
   }
 
   async deleteComment(id: number): Promise<void> {
@@ -460,49 +464,50 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       .from(this.COMMENTS_TABLE)
       .delete()
       .eq('id', id)
-      .eq('tenant_id', this.tenantId)
+      .eq('tenant_id', this.tenantId);
 
     if (error) {
-      console.error('[PhotoRepositorySupabase] Erro ao deletar comentário:', error)
-      throw new Error(error.message)
+      console.error('[PhotoRepositorySupabase] Erro ao deletar comentário:', error);
+      throw new Error(error.message);
     }
   }
 
   // ========== ESTATÍSTICAS ==========
 
   async getStats(): Promise<PhotoStats> {
-    const [totalResult, approvedResult, likesResult, commentsResult, photosResult, videosResult] = await Promise.all([
-      supabase
-        .from(this.TABLE)
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', this.tenantId),
-      supabase
-        .from(this.TABLE)
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', this.tenantId)
-        .eq('aprovado', true),
-      supabase
-        .from(this.LIKES_TABLE)
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', this.tenantId),
-      supabase
-        .from(this.COMMENTS_TABLE)
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', this.tenantId),
-      supabase
-        .from(this.TABLE)
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', this.tenantId)
-        .eq('media_type', 'photo'),
-      supabase
-        .from(this.TABLE)
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', this.tenantId)
-        .eq('media_type', 'video'),
-    ])
+    const [totalResult, approvedResult, likesResult, commentsResult, photosResult, videosResult] =
+      await Promise.all([
+        supabase
+          .from(this.TABLE)
+          .select('*', { count: 'exact', head: true })
+          .eq('tenant_id', this.tenantId),
+        supabase
+          .from(this.TABLE)
+          .select('*', { count: 'exact', head: true })
+          .eq('tenant_id', this.tenantId)
+          .eq('aprovado', true),
+        supabase
+          .from(this.LIKES_TABLE)
+          .select('*', { count: 'exact', head: true })
+          .eq('tenant_id', this.tenantId),
+        supabase
+          .from(this.COMMENTS_TABLE)
+          .select('*', { count: 'exact', head: true })
+          .eq('tenant_id', this.tenantId),
+        supabase
+          .from(this.TABLE)
+          .select('*', { count: 'exact', head: true })
+          .eq('tenant_id', this.tenantId)
+          .eq('media_type', 'photo'),
+        supabase
+          .from(this.TABLE)
+          .select('*', { count: 'exact', head: true })
+          .eq('tenant_id', this.tenantId)
+          .eq('media_type', 'video'),
+      ]);
 
-    const total = totalResult.count || 0
-    const approved = approvedResult.count || 0
+    const total = totalResult.count || 0;
+    const approved = approvedResult.count || 0;
 
     return {
       total,
@@ -512,7 +517,7 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       totalComments: commentsResult.count || 0,
       totalPhotos: photosResult.count || 0,
       totalVideos: videosResult.count || 0,
-    }
+    };
   }
 
   async getGuestPhotoCount(codigo: string): Promise<number> {
@@ -521,21 +526,21 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', this.tenantId)
       .ilike('codigo_convidado', codigo)
-      .eq('media_type', 'photo')
+      .eq('media_type', 'photo');
 
     if (error) {
-      console.error('[PhotoRepositorySupabase] Erro ao contar fotos do convidado:', error)
-      return 0
+      console.error('[PhotoRepositorySupabase] Erro ao contar fotos do convidado:', error);
+      return 0;
     }
 
-    return count || 0
+    return count || 0;
   }
 
   // ========== DOWNLOAD ==========
 
   async getPhotoDownloadUrls(): Promise<string[]> {
-    const photos = await this.getApprovedPhotos(1000)
-    return photos.map((photo) => photo.public_url || '').filter(Boolean)
+    const photos = await this.getApprovedPhotos(1000);
+    return photos.map(photo => photo.public_url || '').filter(Boolean);
   }
 
   // ========== MÉTODOS PRIVADOS ==========
@@ -544,27 +549,25 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
    * Verifica se deve auto-aprovar baseado na data do casamento
    */
   private shouldAutoApprove(): boolean {
-    const weddingDateStr = import.meta.env.VITE_WEDDING_DATE
+    const weddingDateStr = import.meta.env.VITE_WEDDING_DATE;
     if (!weddingDateStr) {
-      console.warn(
-        '[PhotoRepositorySupabase] VITE_WEDDING_DATE não definido, usando moderação'
-      )
-      return false
+      console.warn('[PhotoRepositorySupabase] VITE_WEDDING_DATE não definido, usando moderação');
+      return false;
     }
 
-    const weddingDate = new Date(weddingDateStr + 'T00:00:00')
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const weddingDate = new Date(weddingDateStr + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    return today >= weddingDate
+    return today >= weddingDate;
   }
 
   /**
    * Mapeia dados do banco para entidade Photo com URL pública
    */
   private mapPhotoWithUrl(data: Record<string, unknown>): Photo {
-    const storagePath = data.storage_path as string
-    const posterPath = data.poster_path as string | undefined
+    const storagePath = data.storage_path as string;
+    const posterPath = data.poster_path as string | undefined;
     return {
       id: data.id as number,
       codigo_convidado: data.codigo_convidado as string,
@@ -588,13 +591,13 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       likes_count: 0,
       comments_count: 0,
       user_liked: false,
-    }
+    };
   }
 
   /**
    * Mapeia array de dados para array de Photos
    */
   private mapPhotosWithUrls(data: Record<string, unknown>[]): Photo[] {
-    return data.map((item) => this.mapPhotoWithUrl(item))
+    return data.map(item => this.mapPhotoWithUrl(item));
   }
 }

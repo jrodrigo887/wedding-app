@@ -13,9 +13,23 @@
           stroke-linecap="round"
           stroke-linejoin="round"
         >
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
+          <circle
+            cx="12"
+            cy="12"
+            r="10"
+          />
+          <line
+            x1="12"
+            y1="8"
+            x2="12"
+            y2="12"
+          />
+          <line
+            x1="12"
+            y1="16"
+            x2="12.01"
+            y2="16"
+          />
         </svg>
       </div>
 
@@ -28,19 +42,29 @@
       <p class="help-text">Entre em contato com o administrador para mais informações.</p>
 
       <div class="actions">
-        <button class="btn-primary" @click="goHome">Voltar ao início</button>
-        <button class="btn-secondary" @click="goBack">Voltar</button>
+        <button
+          class="btn-primary"
+          @click="goHome"
+        >
+          Voltar ao início
+        </button>
+        <button
+          class="btn-secondary"
+          @click="goBack"
+        >
+          Voltar
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
 const FEATURE_LABELS: Record<string, string> = {
   photos: 'Galeria de Fotos',
@@ -48,20 +72,20 @@ const FEATURE_LABELS: Record<string, string> = {
   contracts: 'Gestão de Contratos',
   checkin: 'Check-in de Convidados',
   pix: 'Pagamento PIX',
-}
+};
 
 const featureLabel = computed(() => {
-  const feature = route.query.feature as string
-  return FEATURE_LABELS[feature] || feature || 'solicitado'
-})
+  const feature = route.query.feature as string;
+  return FEATURE_LABELS[feature] || feature || 'solicitado';
+});
 
 const goHome = () => {
-  router.push({ name: 'home' })
-}
+  router.push({ name: 'home' });
+};
 
 const goBack = () => {
-  router.back()
-}
+  router.back();
+};
 </script>
 
 <style scoped>

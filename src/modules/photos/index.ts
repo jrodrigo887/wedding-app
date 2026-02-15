@@ -1,5 +1,6 @@
 // Domain
-export * from './domain/entities';
+export * from '@/entities/photo';
+export * from '@/entities/comment';
 export * from './domain/interfaces';
 
 // Infrastructure

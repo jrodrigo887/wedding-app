@@ -24,7 +24,10 @@
       <RsvpCard v-if="store.currentGuest && !store.confirmed && !store.declined">
         <GuestDetails :guest="store.currentGuest">
           <!-- Já confirmado -->
-          <div v-if="store.currentGuest.confirmado" class="rsvp-already-confirmed">
+          <div
+            v-if="store.currentGuest.confirmado"
+            class="rsvp-already-confirmed"
+          >
             <span class="rsvp-already-confirmed__check">✅</span>
             <p>Sua presença já foi confirmada anteriormente!</p>
             <button
@@ -36,10 +39,11 @@
           </div>
 
           <!-- Não confirmado -->
-          <div v-else class="rsvp-actions">
-            <p class="rsvp-actions__text">
-              Deseja confirmar sua presença no casamento?
-            </p>
+          <div
+            v-else
+            class="rsvp-actions"
+          >
+            <p class="rsvp-actions__text">Deseja confirmar sua presença no casamento?</p>
             <div class="rsvp-actions__buttons">
               <button
                 class="rsvp-actions__confirm-button"
@@ -59,12 +63,20 @@
             </div>
           </div>
 
-          <button class="rsvp-back-button" @click="reset">← Voltar</button>
+          <button
+            class="rsvp-back-button"
+            @click="reset"
+          >
+            ← Voltar
+          </button>
         </GuestDetails>
       </RsvpCard>
 
       <!-- Confirmação bem-sucedida -->
-      <RsvpCard v-if="store.confirmed" class="rsvp-success">
+      <RsvpCard
+        v-if="store.confirmed"
+        class="rsvp-success"
+      >
         <div class="rsvp-success__icon">🎉</div>
         <h2 class="rsvp-success__title">Presença Confirmada!</h2>
         <p class="rsvp-success__message">
@@ -88,10 +100,16 @@
         <p class="rsvp-success__date">{{ formattedWeddingDate }}</p>
 
         <div class="rsvp-success__actions">
-          <button class="rsvp-success__button" @click="reset">
+          <button
+            class="rsvp-success__button"
+            @click="reset"
+          >
             Nova Confirmação
           </button>
-          <router-link to="/" class="rsvp-success__link">
+          <router-link
+            to="/"
+            class="rsvp-success__link"
+          >
             Ver Lista de Presentes →
           </router-link>
         </div>
@@ -104,12 +122,10 @@
         icon="⚠️"
         @close="showCancelModal = false"
       >
-        <template #message>
-          Tem certeza que deseja cancelar sua presença no casamento?
-        </template>
+        <template #message> Tem certeza que deseja cancelar sua presença no casamento? </template>
         <template #warning>
-          Esta ação irá remover sua confirmação e você precisará confirmar
-          novamente caso mude de ideia.
+          Esta ação irá remover sua confirmação e você precisará confirmar novamente caso mude de
+          ideia.
         </template>
         <template #actions>
           <button
@@ -141,8 +157,8 @@
           Que pena que você não poderá estar presente no nosso casamento!
         </template>
         <template #info>
-          Ao confirmar, registraremos que você não poderá comparecer. Caso mude
-          de ideia, você pode confirmar sua presença a qualquer momento.
+          Ao confirmar, registraremos que você não poderá comparecer. Caso mude de ideia, você pode
+          confirmar sua presença a qualquer momento.
         </template>
         <template #actions>
           <button
@@ -164,22 +180,31 @@
       </RsvpModal>
 
       <!-- Tela de Ausência Registrada -->
-      <RsvpCard v-if="store.declined" class="rsvp-declined">
+      <RsvpCard
+        v-if="store.declined"
+        class="rsvp-declined"
+      >
         <div class="rsvp-declined__icon">📝</div>
         <h2 class="rsvp-declined__title">Ausência Registrada</h2>
         <p class="rsvp-declined__message">
           Registramos que você não poderá comparecer ao casamento.
         </p>
         <p class="rsvp-declined__note">
-          Sentiremos sua falta! Caso mude de ideia, você pode confirmar sua
-          presença a qualquer momento.
+          Sentiremos sua falta! Caso mude de ideia, você pode confirmar sua presença a qualquer
+          momento.
         </p>
 
         <div class="rsvp-declined__actions">
-          <button class="rsvp-declined__button" @click="reset">
+          <button
+            class="rsvp-declined__button"
+            @click="reset"
+          >
             Voltar ao início
           </button>
-          <router-link to="/" class="rsvp-declined__link">
+          <router-link
+            to="/"
+            class="rsvp-declined__link"
+          >
             Ver Lista de Presentes →
           </router-link>
         </div>
@@ -187,7 +212,10 @@
 
       <!-- Link para lista de presentes -->
       <footer class="rsvp-footer">
-        <router-link to="/" class="rsvp-footer__link">
+        <router-link
+          to="/"
+          class="rsvp-footer__link"
+        >
           🎁 Ver Lista de Presentes
         </router-link>
       </footer>

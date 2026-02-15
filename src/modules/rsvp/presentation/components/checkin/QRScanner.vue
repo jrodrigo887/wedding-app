@@ -1,26 +1,41 @@
 <template>
   <Teleport to="body">
-    <div v-if="show" class="scanner-modal">
+    <div
+      v-if="show"
+      class="scanner-modal"
+    >
       <div class="scanner-modal__content">
         <div class="scanner-modal__header">
           <h3 class="scanner-modal__title">Escanear QR Code</h3>
-          <button class="scanner-modal__close" @click="$emit('close')">
+          <button
+            class="scanner-modal__close"
+            @click="$emit('close')"
+          >
             &times;
           </button>
         </div>
 
         <div class="scanner-modal__body">
           <!-- Container do QR Scanner -->
-          <div id="qr-reader" class="qr-reader"></div>
+          <div
+            id="qr-reader"
+            class="qr-reader"
+          ></div>
 
           <!-- Status do Scanner -->
-          <div v-if="status && !scannedCode" class="scanner-status">
+          <div
+            v-if="status && !scannedCode"
+            class="scanner-status"
+          >
             <div class="scanner-status__spinner"></div>
             <span>{{ status }}</span>
           </div>
 
           <!-- Resultado do Scan -->
-          <div v-if="scannedCode" class="scanner-result">
+          <div
+            v-if="scannedCode"
+            class="scanner-result"
+          >
             <p class="scanner-result__label">QR Code detectado:</p>
             <p class="scanner-result__code">{{ scannedCode }}</p>
           </div>

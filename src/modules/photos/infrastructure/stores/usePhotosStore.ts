@@ -1,12 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type {
-  Photo,
-  PhotoStats,
-  PhotoComment,
-  MediaType,
-} from '../../domain/entities';
-import { createEmptyPhotoStats } from '../../domain/entities';
+import type { Photo, PhotoStats, MediaType } from '@/entities/photo';
+import type { PhotoComment } from '@/entities/comment';
+import { createEmptyPhotoStats } from '@/entities/photo';
 import { photoRepository } from '../repositories';
 
 /**
@@ -57,7 +53,7 @@ export const usePhotosStore = defineStore('photos', () => {
   // Mídia filtrada
   const filteredMedia = computed(() => {
     if (mediaFilter.value === 'all') return photos.value;
-    return photos.value.filter((p) => p.media_type === mediaFilter.value);
+    return photos.value.filter(p => p.media_type === mediaFilter.value);
   });
 
   const isAutoApproveEnabled = computed(() => {
@@ -124,10 +120,7 @@ export const usePhotosStore = defineStore('photos', () => {
       // Busca likes e comentários para cada foto
       if (currentGuestCode.value) {
         for (const photo of fetchedPhotos) {
-          photo.user_liked = await photoRepository.hasUserLiked(
-            photo.id!,
-            currentGuestCode.value
-          );
+          photo.user_liked = await photoRepository.hasUserLiked(photo.id!, currentGuestCode.value);
           photo.likes_count = await photoRepository.getPhotoLikes(photo.id!);
         }
       }
@@ -157,10 +150,7 @@ export const usePhotosStore = defineStore('photos', () => {
 
       if (currentGuestCode.value) {
         for (const photo of fetchedPhotos) {
-          photo.user_liked = await photoRepository.hasUserLiked(
-            photo.id!,
-            currentGuestCode.value
-          );
+          photo.user_liked = await photoRepository.hasUserLiked(photo.id!, currentGuestCode.value);
           photo.likes_count = await photoRepository.getPhotoLikes(photo.id!);
         }
       }
@@ -181,9 +171,7 @@ export const usePhotosStore = defineStore('photos', () => {
     if (!currentGuestCode.value) return;
 
     try {
-      const mediaCount = await photoRepository.getGuestMediaCount(
-        currentGuestCode.value
-      );
+      const mediaCount = await photoRepository.getGuestMediaCount(currentGuestCode.value);
       currentGuestPhotoCount.value = mediaCount.photos;
       currentGuestVideoCount.value = mediaCount.videos;
     } catch (err) {
@@ -331,7 +319,7 @@ export const usePhotosStore = defineStore('photos', () => {
   const toggleLike = async (photoId: number): Promise<void> => {
     if (!currentGuestCode.value) return;
 
-    const photo = photos.value.find((p) => p.id === photoId);
+    const photo = photos.value.find(p => p.id === photoId);
     if (!photo) return;
 
     try {
@@ -364,7 +352,7 @@ export const usePhotosStore = defineStore('photos', () => {
       });
 
       // Atualiza contador
-      const photo = photos.value.find((p) => p.id === photoId);
+      const photo = photos.value.find(p => p.id === photoId);
       if (photo) {
         photo.comments_count = (photo.comments_count || 0) + 1;
       }
@@ -431,11 +419,11 @@ export const usePhotosStore = defineStore('photos', () => {
     try {
       await photoRepository.approvePhoto(id);
 
-      const photo = pendingPhotos.value.find((p) => p.id === id);
+      const photo = pendingPhotos.value.find(p => p.id === id);
       if (photo) {
         photo.aprovado = true;
         photos.value.unshift(photo);
-        pendingPhotos.value = pendingPhotos.value.filter((p) => p.id !== id);
+        pendingPhotos.value = pendingPhotos.value.filter(p => p.id !== id);
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Erro ao aprovar foto';
@@ -448,8 +436,8 @@ export const usePhotosStore = defineStore('photos', () => {
   const rejectPhoto = async (id: number): Promise<void> => {
     try {
       await photoRepository.rejectPhoto(id);
-      pendingPhotos.value = pendingPhotos.value.filter((p) => p.id !== id);
-      photos.value = photos.value.filter((p) => p.id !== id);
+      pendingPhotos.value = pendingPhotos.value.filter(p => p.id !== id);
+      photos.value = photos.value.filter(p => p.id !== id);
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Erro ao rejeitar foto';
     }
@@ -462,13 +450,13 @@ export const usePhotosStore = defineStore('photos', () => {
     try {
       await photoRepository.bulkApprove(ids);
 
-      const approvedPhotos = pendingPhotos.value.filter((p) => ids.includes(p.id!));
-      approvedPhotos.forEach((p) => {
+      const approvedPhotos = pendingPhotos.value.filter(p => ids.includes(p.id!));
+      approvedPhotos.forEach(p => {
         p.aprovado = true;
         photos.value.unshift(p);
       });
 
-      pendingPhotos.value = pendingPhotos.value.filter((p) => !ids.includes(p.id!));
+      pendingPhotos.value = pendingPhotos.value.filter(p => !ids.includes(p.id!));
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Erro ao aprovar fotos';
     }
@@ -490,11 +478,11 @@ export const usePhotosStore = defineStore('photos', () => {
   const handleNewPhoto = (photo: Photo): void => {
     if (photo.aprovado) {
       // Evita duplicatas
-      if (!photos.value.find((p) => p.id === photo.id)) {
+      if (!photos.value.find(p => p.id === photo.id)) {
         photos.value.unshift(photo);
       }
     } else {
-      if (!pendingPhotos.value.find((p) => p.id === photo.id)) {
+      if (!pendingPhotos.value.find(p => p.id === photo.id)) {
         pendingPhotos.value.unshift(photo);
       }
     }
@@ -502,14 +490,14 @@ export const usePhotosStore = defineStore('photos', () => {
 
   const handlePhotoUpdate = (updatedPhoto: Photo): void => {
     // Atualiza no feed
-    const index = photos.value.findIndex((p) => p.id === updatedPhoto.id);
+    const index = photos.value.findIndex(p => p.id === updatedPhoto.id);
     if (index !== -1) {
       photos.value[index] = { ...photos.value[index], ...updatedPhoto };
     }
 
     // Se foi aprovada, move de pending para feed
     if (updatedPhoto.aprovado) {
-      const pendingIndex = pendingPhotos.value.findIndex((p) => p.id === updatedPhoto.id);
+      const pendingIndex = pendingPhotos.value.findIndex(p => p.id === updatedPhoto.id);
       if (pendingIndex !== -1) {
         const photo = pendingPhotos.value[pendingIndex];
         photo.aprovado = true;
@@ -520,20 +508,20 @@ export const usePhotosStore = defineStore('photos', () => {
   };
 
   const handleNewLike = (fotoId: number): void => {
-    const photo = photos.value.find((p) => p.id === fotoId);
+    const photo = photos.value.find(p => p.id === fotoId);
     if (photo) {
       photo.likes_count = (photo.likes_count || 0) + 1;
     }
   };
 
   const handleNewComment = (fotoId: number, comment: PhotoComment): void => {
-    const photo = photos.value.find((p) => p.id === fotoId);
+    const photo = photos.value.find(p => p.id === fotoId);
     if (photo) {
       photo.comments_count = (photo.comments_count || 0) + 1;
     }
 
     if (selectedPhoto.value?.id === fotoId) {
-      if (!selectedPhotoComments.value.find((c) => c.id === comment.id)) {
+      if (!selectedPhotoComments.value.find(c => c.id === comment.id)) {
         selectedPhotoComments.value.push(comment);
       }
     }

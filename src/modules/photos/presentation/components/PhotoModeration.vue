@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { usePhotosStore } from '../../infrastructure/stores';
 import { formatDuration } from '../../infrastructure/services/videoCompressor';
-import type { Photo } from '../../domain/entities';
+import type { Photo } from '@/entities/photo';
 
 /**
  * Component: PhotoModeration
@@ -30,21 +30,25 @@ const selectAll = () => {
   if (selectedIds.value.length === store.pendingPhotos.length) {
     selectedIds.value = [];
   } else {
-    selectedIds.value = store.pendingPhotos.map((p) => p.id!);
+    selectedIds.value = store.pendingPhotos.map(p => p.id!);
   }
 };
 
 const handleApprove = async (id: number) => {
   await store.approvePhoto(id);
-  selectedIds.value = selectedIds.value.filter((i) => i !== id);
+  selectedIds.value = selectedIds.value.filter(i => i !== id);
 };
 
 const handleReject = async (id: number) => {
-  const item = store.pendingPhotos.find((p) => p.id === id);
+  const item = store.pendingPhotos.find(p => p.id === id);
   const itemType = item?.media_type === 'video' ? 'vídeo' : 'foto';
-  if (confirm(`Tem certeza que deseja rejeitar ${itemType === 'vídeo' ? 'este' : 'esta'} ${itemType}? ${itemType === 'vídeo' ? 'Ele' : 'Ela'} será ${itemType === 'vídeo' ? 'excluído' : 'excluída'}.`)) {
+  if (
+    confirm(
+      `Tem certeza que deseja rejeitar ${itemType === 'vídeo' ? 'este' : 'esta'} ${itemType}? ${itemType === 'vídeo' ? 'Ele' : 'Ela'} será ${itemType === 'vídeo' ? 'excluído' : 'excluída'}.`
+    )
+  ) {
     await store.rejectPhoto(id);
-    selectedIds.value = selectedIds.value.filter((i) => i !== id);
+    selectedIds.value = selectedIds.value.filter(i => i !== id);
   }
 };
 
@@ -81,11 +85,12 @@ const getMediaSrc = (photo: Photo): string => {
   <div class="photo-moderation">
     <!-- Header -->
     <div class="photo-moderation__header">
-      <h3 class="photo-moderation__title">
-        Mídia Pendente ({{ store.pendingPhotos.length }})
-      </h3>
+      <h3 class="photo-moderation__title">Mídia Pendente ({{ store.pendingPhotos.length }})</h3>
 
-      <div v-if="store.pendingPhotos.length > 0" class="photo-moderation__actions">
+      <div
+        v-if="store.pendingPhotos.length > 0"
+        class="photo-moderation__actions"
+      >
         <label class="photo-moderation__select-all">
           <input
             type="checkbox"
@@ -114,23 +119,30 @@ const getMediaSrc = (photo: Photo): string => {
       <span v-if="store.isAutoApproveEnabled">
         Modo automático ativo - novas mídias são aprovadas instantaneamente
       </span>
-      <span v-else>
-        Modo moderação ativo - fotos e vídeos precisam de aprovação manual
-      </span>
+      <span v-else> Modo moderação ativo - fotos e vídeos precisam de aprovação manual </span>
     </div>
 
     <!-- Loading -->
-    <div v-if="store.loading" class="photo-moderation__loading">
+    <div
+      v-if="store.loading"
+      class="photo-moderation__loading"
+    >
       Carregando mídia pendente...
     </div>
 
     <!-- Empty -->
-    <div v-else-if="!store.hasPendingPhotos" class="photo-moderation__empty">
+    <div
+      v-else-if="!store.hasPendingPhotos"
+      class="photo-moderation__empty"
+    >
       Nenhuma mídia pendente de aprovação
     </div>
 
     <!-- Grid -->
-    <div v-else class="photo-moderation__grid">
+    <div
+      v-else
+      class="photo-moderation__grid"
+    >
       <div
         v-for="photo in store.pendingPhotos"
         :key="photo.id"
@@ -155,11 +167,19 @@ const getMediaSrc = (photo: Photo): string => {
           <!-- Indicadores de vídeo -->
           <template v-if="isVideo(photo)">
             <div class="photo-moderation__play-icon">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="white">
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="white"
+              >
                 <path d="M8 5v14l11-7z" />
               </svg>
             </div>
-            <div v-if="photo.duration" class="photo-moderation__duration">
+            <div
+              v-if="photo.duration"
+              class="photo-moderation__duration"
+            >
               {{ formatDuration(photo.duration) }}
             </div>
           </template>
@@ -168,12 +188,18 @@ const getMediaSrc = (photo: Photo): string => {
         <div class="photo-moderation__info">
           <div class="photo-moderation__info-header">
             <span class="photo-moderation__author">{{ photo.nome_convidado }}</span>
-            <span class="photo-moderation__type-badge" :class="{ 'photo-moderation__type-badge--video': isVideo(photo) }">
+            <span
+              class="photo-moderation__type-badge"
+              :class="{ 'photo-moderation__type-badge--video': isVideo(photo) }"
+            >
               {{ isVideo(photo) ? '🎥' : '📷' }}
             </span>
           </div>
           <span class="photo-moderation__date">{{ formatDate(photo.created_at) }}</span>
-          <p v-if="photo.caption" class="photo-moderation__caption">
+          <p
+            v-if="photo.caption"
+            class="photo-moderation__caption"
+          >
             {{ photo.caption }}
           </p>
         </div>

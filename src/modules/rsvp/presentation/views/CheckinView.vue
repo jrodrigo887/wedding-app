@@ -19,15 +19,16 @@
       />
 
       <!-- Área de Check-in -->
-      <div v-else class="checkin-main">
+      <div
+        v-else
+        class="checkin-main"
+      >
         <!-- Estatísticas -->
         <CheckinStats :count="store.checkinCount" />
 
         <!-- Form de busca -->
         <div class="checkin-form">
-          <p class="checkin-form__instruction">
-            Digite ou escaneie o código do convidado
-          </p>
+          <p class="checkin-form__instruction">Digite ou escaneie o código do convidado</p>
 
           <div class="checkin-form__input-group">
             <div class="checkin-form__input-wrapper">
@@ -62,32 +63,32 @@
             📷 Escanear Código
           </button>
 
-          <p v-if="store.error" class="checkin-form__error">
+          <p
+            v-if="store.error"
+            class="checkin-form__error"
+          >
             {{ store.error }}
           </p>
         </div>
 
         <!-- Dados do convidado -->
-        <div v-if="store.currentGuest" class="checkin-guest">
+        <div
+          v-if="store.currentGuest"
+          class="checkin-guest"
+        >
           <div class="checkin-guest__card">
             <div class="checkin-guest__header">
               <span class="checkin-guest__icon">👤</span>
               <h3 class="checkin-guest__name">
                 {{ store.currentGuest.nome
-                }}{{
-                  store.currentGuest.parceiro
-                    ? ` e ${store.currentGuest.parceiro}`
-                    : ''
-                }}
+                }}{{ store.currentGuest.parceiro ? ` e ${store.currentGuest.parceiro}` : '' }}
               </h3>
             </div>
 
             <div class="checkin-guest__details">
               <div class="checkin-guest__detail">
                 <span class="checkin-guest__label">Código:</span>
-                <span class="checkin-guest__value">{{
-                  store.currentGuest.codigo
-                }}</span>
+                <span class="checkin-guest__value">{{ store.currentGuest.codigo }}</span>
               </div>
               <div class="checkin-guest__detail">
                 <span class="checkin-guest__label">Total de pessoas:</span>
@@ -103,11 +104,7 @@
                       : 'checkin-guest__value--pending'
                   "
                 >
-                  {{
-                    store.currentGuest.confirmado
-                      ? 'Confirmado'
-                      : 'Não confirmado'
-                  }}
+                  {{ store.currentGuest.confirmado ? 'Confirmado' : 'Não confirmado' }}
                 </span>
               </div>
               <div class="checkin-guest__detail">
@@ -120,11 +117,7 @@
                       : 'checkin-guest__value--pending'
                   "
                 >
-                  {{
-                    store.currentGuest.entrada_confirmada
-                      ? 'Realizado'
-                      : 'Pendente'
-                  }}
+                  {{ store.currentGuest.entrada_confirmada ? 'Realizado' : 'Pendente' }}
                 </span>
               </div>
             </div>
@@ -143,7 +136,10 @@
               </p>
             </div>
 
-            <div v-else class="checkin-guest__actions">
+            <div
+              v-else
+              class="checkin-guest__actions"
+            >
               <button
                 class="checkin-guest__checkin-button"
                 :disabled="checkingIn"
@@ -154,28 +150,38 @@
               </button>
             </div>
 
-            <button class="checkin-guest__new" @click="resetGuest">
+            <button
+              class="checkin-guest__new"
+              @click="resetGuest"
+            >
               Novo Check-in
             </button>
           </div>
         </div>
 
         <!-- Sucesso do check-in -->
-        <div v-if="store.checkinSuccess" class="checkin-success">
+        <div
+          v-if="store.checkinSuccess"
+          class="checkin-success"
+        >
           <div class="checkin-success__card">
             <div class="checkin-success__icon">🎉</div>
             <h3 class="checkin-success__title">Check-in Realizado!</h3>
-            <p class="checkin-success__message">
-              {{ store.lastCheckedInGuest }} entrou no evento
-            </p>
-            <button class="checkin-success__button" @click="resetAll">
+            <p class="checkin-success__message">{{ store.lastCheckedInGuest }} entrou no evento</p>
+            <button
+              class="checkin-success__button"
+              @click="resetAll"
+            >
               Próximo Check-in
             </button>
           </div>
         </div>
 
         <!-- Botão de sair -->
-        <button class="checkin-logout" @click="handleLogout">
+        <button
+          class="checkin-logout"
+          @click="handleLogout"
+        >
           🚪 Sair da área restrita
         </button>
       </div>
@@ -227,12 +233,12 @@ let html5QrCode: Html5Qrcode | null = null;
 // Carrega contagem quando autenticado
 watch(
   authenticated,
-  async (isAuthenticated) => {
+  async isAuthenticated => {
     if (isAuthenticated) {
       await store.fetchCheckinCount();
     }
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 // Methods
@@ -322,12 +328,7 @@ const openScanner = async (): Promise<void> => {
       aspectRatio: 1.0,
     };
 
-    await html5QrCode.start(
-      { facingMode: 'environment' },
-      config,
-      onQrCodeSuccess,
-      onQrCodeError,
-    );
+    await html5QrCode.start({ facingMode: 'environment' }, config, onQrCodeSuccess, onQrCodeError);
 
     scannerStatus.value = 'Aponte para o QR Code';
     scanning.value = true;

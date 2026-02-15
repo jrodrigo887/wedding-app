@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { supabase } from '@/services/supabase';
+import { supabase } from '@shared/lib/supabase';
 import { usePhotosStore } from '../../infrastructure/stores';
 import { MediaUploader } from '../components';
 
@@ -78,17 +78,21 @@ const goToFeed = () => {
     <div class="photo-upload-view__container">
       <!-- Header -->
       <header class="photo-upload-view__header">
-        <button class="photo-upload-view__back" @click="goToFeed">
+        <button
+          class="photo-upload-view__back"
+          @click="goToFeed"
+        >
           ← Voltar para galeria
         </button>
         <h1 class="photo-upload-view__title">Enviar Foto ou Vídeo</h1>
-        <p class="photo-upload-view__subtitle">
-          Compartilhe seus momentos especiais conosco
-        </p>
+        <p class="photo-upload-view__subtitle">Compartilhe seus momentos especiais conosco</p>
       </header>
 
       <!-- Identificação -->
-      <div v-if="!isIdentified" class="photo-upload-view__identify">
+      <div
+        v-if="!isIdentified"
+        class="photo-upload-view__identify"
+      >
         <div class="photo-upload-view__identify-card">
           <h2 class="photo-upload-view__identify-title">Identifique-se</h2>
           <p class="photo-upload-view__identify-text">
@@ -116,16 +120,24 @@ const goToFeed = () => {
             </button>
           </div>
 
-          <p v-if="identifyError" class="photo-upload-view__error">
+          <p
+            v-if="identifyError"
+            class="photo-upload-view__error"
+          >
             {{ identifyError }}
           </p>
         </div>
       </div>
 
       <!-- Upload -->
-      <main v-else class="photo-upload-view__main">
+      <main
+        v-else
+        class="photo-upload-view__main"
+      >
         <div class="photo-upload-view__user-info">
-          <span>Enviando como: <strong>{{ store.currentGuestName }}</strong></span>
+          <span
+            >Enviando como: <strong>{{ store.currentGuestName }}</strong></span
+          >
         </div>
 
         <MediaUploader />

@@ -15,13 +15,8 @@ interface FileItem {
 }
 
 const store = usePhotosStore();
-const {
-  compressing,
-  compressionProgress,
-  clearPreview,
-  uploadWithCompression,
-  validateFile,
-} = usePhotoUpload();
+const { compressing, compressionProgress, clearPreview, uploadWithCompression, validateFile } =
+  usePhotoUpload();
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const selectedFiles = ref<FileItem[]>([]);
@@ -183,19 +178,24 @@ const handleCancel = () => {
       <p class="photo-uploader__text">
         {{ isDragging ? 'Solte as fotos aqui' : 'Toque ou arraste fotos aqui' }}
       </p>
-      <p class="photo-uploader__hint">
-        {{ store.remainingUploads }} fotos restantes
-      </p>
+      <p class="photo-uploader__hint">{{ store.remainingUploads }} fotos restantes</p>
     </div>
 
     <!-- Grid de previews -->
-    <div v-if="hasFiles && !uploading" class="photo-uploader__grid">
+    <div
+      v-if="hasFiles && !uploading"
+      class="photo-uploader__grid"
+    >
       <div
         v-for="(item, index) in selectedFiles"
         :key="index"
         class="photo-uploader__thumb"
       >
-        <img :src="item.previewUrl" alt="Preview" class="photo-uploader__thumb-img" />
+        <img
+          :src="item.previewUrl"
+          alt="Preview"
+          class="photo-uploader__thumb-img"
+        />
         <button
           type="button"
           class="photo-uploader__thumb-remove"
@@ -207,7 +207,10 @@ const handleCancel = () => {
     </div>
 
     <!-- Progresso de upload -->
-    <div v-if="uploading" class="photo-uploader__uploading">
+    <div
+      v-if="uploading"
+      class="photo-uploader__uploading"
+    >
       <UploadProgress
         :progress="compressing ? compressionProgress : store.uploadProgress"
         :status="compressing ? 'compressing' : 'uploading'"
@@ -218,9 +221,14 @@ const handleCancel = () => {
     </div>
 
     <!-- Formulário de legenda e ações -->
-    <div v-if="hasFiles && !uploading" class="photo-uploader__form">
+    <div
+      v-if="hasFiles && !uploading"
+      class="photo-uploader__form"
+    >
       <p class="photo-uploader__count">
-        {{ selectedFiles.length }} foto{{ selectedFiles.length > 1 ? 's' : '' }} selecionada{{ selectedFiles.length > 1 ? 's' : '' }}
+        {{ selectedFiles.length }} foto{{ selectedFiles.length > 1 ? 's' : '' }} selecionada{{
+          selectedFiles.length > 1 ? 's' : ''
+        }}
       </p>
 
       <textarea
@@ -251,8 +259,16 @@ const handleCancel = () => {
     </div>
 
     <!-- Mensagens -->
-    <p v-if="error" class="photo-uploader__error">{{ error }}</p>
-    <p v-if="success" class="photo-uploader__success">
+    <p
+      v-if="error"
+      class="photo-uploader__error"
+    >
+      {{ error }}
+    </p>
+    <p
+      v-if="success"
+      class="photo-uploader__success"
+    >
       Fotos enviadas com sucesso!
     </p>
 
