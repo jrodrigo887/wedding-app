@@ -174,7 +174,7 @@ export const THEMES: Record<ThemeName, ThemeInfo> = {
 ### No código Vue
 
 ```typescript
-import { useTheme } from '@/core/composables'
+import { useTheme } from '@shared/utils'
 
 const { loadTheme, applyTenantTheme, toggleDarkMode } = useTheme()
 

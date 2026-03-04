@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Photo } from '../model/types';
-import { formatDuration } from '@/modules/photos/infrastructure/services/videoCompressor';
-import LikeButton from '@/modules/photos/presentation/components/LikeButton.vue';
+import { formatDuration } from '@/features/photo-upload';
+import { LikeButton } from '@/features/photo-interactions';
 
 interface Props {
   photo: Photo;

@@ -1,7 +1,7 @@
 // Tenant Context - Vue Provide/Inject para contexto de tenant
 import { ref, provide, inject, readonly, type Ref, type DeepReadonly } from 'vue';
 import type { TenantConfig } from '@shared/config/tenant';
-import { clearRepositoryCache } from '@shared/api/repositoryFactory';
+import { clearRepositoryCache } from '@/app/providers/repositoryFactory';
 
 // Simbolo unico para injecao de dependencia
 const TENANT_CONTEXT_KEY = Symbol('TenantContext');

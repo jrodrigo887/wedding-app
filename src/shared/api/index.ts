@@ -1,2 +1,3 @@
 export * from './apiService';
-export * from './repositoryFactory';
+export * from './storageService';
+export * from './tenantService';

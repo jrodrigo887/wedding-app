@@ -2,8 +2,9 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import pluginVue from 'eslint-plugin-vue';
 import prettierConfig from 'eslint-config-prettier';
+import boundaries from 'eslint-plugin-boundaries';
 
-export default tseslint.config(
+export default [
   // ── Ignores ────────────────────────────────────────────────
   {
     ignores: [
@@ -14,6 +15,8 @@ export default tseslint.config(
       '*.config.js',
       '*.config.ts',
       'resize-preview.js',
+      '**/__tests__/**',
+      'src/test/**',
     ],
   },
 
@@ -89,67 +92,35 @@ export default tseslint.config(
   },
 
   {
-    files: ['src/shared/ui/**/*.vue'],
-    rules: {
-      'no-restricted-imports': 'off',
-    },
-  },
-  {
-    files: ['src/shared/**/*.{js,jsx,ts,tsx,vue}'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: ['@/app/**', '@/pages/**', '@/widgets/**', '@/features/**', '@/entities/**'],
-        },
+    plugins: { boundaries },
+    settings: {
+      'boundaries/elements': [
+        { type: 'app', pattern: 'src/app/**' },
+        { type: 'pages', pattern: 'src/pages/**' },
+        { type: 'widgets', pattern: 'src/widgets/**' },
+        { type: 'features', pattern: 'src/features/**' },
+        { type: 'entities', pattern: 'src/entities/**' },
+        { type: 'shared', pattern: 'src/shared/**' },
       ],
     },
-  },
-  {
-    files: ['src/entities/**/*.{js,jsx,ts,tsx,vue}'],
     rules: {
-      'no-restricted-imports': [
+      'boundaries/element-types': [
         'error',
         {
-          patterns: ['@/app/**', '@/pages/**', '@/widgets/**', '@/features/**'],
-        },
-      ],
-    },
-  },
-  {
-    files: ['src/features/**/*.{js,jsx,ts,tsx,vue}'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: ['@/app/**', '@/pages/**', '@/widgets/**'],
-        },
-      ],
-    },
-  },
-  {
-    files: ['src/widgets/**/*.{js,jsx,ts,tsx,vue}'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: ['@/app/**', '@/pages/**'],
-        },
-      ],
-    },
-  },
-  {
-    files: ['src/pages/**/*.{js,jsx,ts,tsx,vue}'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: ['@/app/**'],
+          default: 'disallow',
+          rules: [
+            { from: 'app', allow: ['pages', 'widgets', 'features', 'entities', 'shared'] },
+            { from: 'pages', allow: ['widgets', 'features', 'entities', 'shared'] },
+            { from: 'widgets', allow: ['features', 'entities', 'shared'] },
+            { from: 'features', allow: ['entities', 'shared'] },
+            { from: 'entities', allow: ['shared'] },
+            { from: 'shared', allow: [] },
+          ],
         },
       ],
     },
   },
 
   // ── Prettier (desativa regras de formatação que conflitam) ──
-  prettierConfig
-);
+  prettierConfig,
+];

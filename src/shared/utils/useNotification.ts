@@ -1,6 +1,7 @@
 import { ref, type Ref } from 'vue';
-
-export type NotificationType = 'success' | 'error' | 'warning' | 'info';
+import { generateId } from './helpers';
+import { APP_CONFIG, NOTIFICATION_TYPES } from '@shared/config/constants';
+import type { NotificationType } from '@shared/config/constants';
 
 export interface NotificationItem {
   id: string;
@@ -20,18 +21,13 @@ export interface UseNotificationReturn {
   info: (message: string, duration?: number) => string;
 }
 
-const DEFAULT_DURATION = 5000;
 const notifications = ref<NotificationItem[]>([]);
-
-const generateId = (): string => {
-  return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-};
 
 export function useNotification(): UseNotificationReturn {
   const addNotification = (
     message: string,
-    type: NotificationType = 'info',
-    duration: number = DEFAULT_DURATION
+    type: NotificationType = NOTIFICATION_TYPES.INFO,
+    duration: number = APP_CONFIG.NOTIFICATION_DURATION
   ): string => {
     const id = generateId();
     const notification: NotificationItem = {
@@ -64,19 +60,19 @@ export function useNotification(): UseNotificationReturn {
   };
 
   const success = (message: string, duration?: number): string => {
-    return addNotification(message, 'success', duration);
+    return addNotification(message, NOTIFICATION_TYPES.SUCCESS, duration);
   };
 
   const error = (message: string, duration?: number): string => {
-    return addNotification(message, 'error', duration);
+    return addNotification(message, NOTIFICATION_TYPES.ERROR, duration);
   };
 
   const warning = (message: string, duration?: number): string => {
-    return addNotification(message, 'warning', duration);
+    return addNotification(message, NOTIFICATION_TYPES.WARNING, duration);
   };
 
   const info = (message: string, duration?: number): string => {
-    return addNotification(message, 'info', duration);
+    return addNotification(message, NOTIFICATION_TYPES.INFO, duration);
   };
 
   return {

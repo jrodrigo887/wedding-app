@@ -24,8 +24,8 @@
 </template>
 
 <script setup lang="ts">
-import { useNotification } from '@/composables/useNotification';
-import { NOTIFICATION_TYPES, type NotificationType } from '@/utils/constants';
+import { useNotification } from '@shared/utils';
+import { NOTIFICATION_TYPES, type NotificationType } from '@shared/config/constants';
 
 const { notifications, removeNotification } = useNotification();
 

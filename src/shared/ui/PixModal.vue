@@ -84,10 +84,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { BaseButton } from '@shared/ui';
-import { useNotification } from '@/composables/useNotification';
-import { copyToClipboard } from '@/utils/helpers';
-import { APP_CONFIG, MESSAGES } from '@/utils/constants';
-import qrcodePix from '@/assets/qrcode-pix.png';
+import { useNotification, copyToClipboard } from '@shared/utils';
+import { APP_CONFIG, MESSAGES } from '@shared/config/constants';
+import qrcodePix from '@assets/qrcode-pix.png';
 
 interface Props {
   isOpen?: boolean;

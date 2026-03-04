@@ -202,7 +202,7 @@ await giftStore.reserveGift(id, data);
 ### Helpers
 
 ```javascript
-import { formatCurrency, copyToClipboard } from "@/utils/helpers";
+import { formatCurrency, copyToClipboard } from "@shared/utils";
 
 formatCurrency(150.5); // R$ 150,50
 await copyToClipboard("texto");

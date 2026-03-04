@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Photo } from '../model/types';
-import LikeButton from '@/modules/photos/presentation/components/LikeButton.vue';
+import { LikeButton } from '@/features/photo-interactions';
 
 interface Props {
   photo: Photo;

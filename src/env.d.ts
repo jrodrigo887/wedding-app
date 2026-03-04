@@ -18,6 +18,7 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_ANON_KEY: string;
   readonly VITE_EMAIL_API_URL: string;
   readonly VITE_CHECKIN_PIN: string;
+  readonly VITE_BASE_DOMAIN?: string;
 }
 
 interface ImportMeta {

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { createContractRepository } from '@shared/api';
+import { createContractRepository } from '@/app/providers';
 import type { Contract, ContractForm, ContractStats } from '@/entities/contract';
 
 const contractRepository = createContractRepository();

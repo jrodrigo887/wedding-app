@@ -1,8 +1,11 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { createGuestRepository } from '@shared/api';
-import type { Guest, GuestStats } from '@/entities/guest';
-import { createEmptyGuestStats } from '@/entities/guest';
+import { createGuestRepository } from '@/app/providers';
+import {
+  type Guest,
+  type GuestStats,
+  createEmptyGuestStats,
+} from '@/entities/guest';
 
 const guestRepository = createGuestRepository();
 
@@ -47,7 +50,8 @@ export const useGuestsStore = defineStore('guests', () => {
   };
 
   const fetchGuests = async (force = false): Promise<void> => {
-    if (!force && !shouldRefetch(lastFetchGuests.value) && hasData.value) return;
+    if (!force && !shouldRefetch(lastFetchGuests.value) && hasData.value)
+      return;
 
     loading.value = true;
     error.value = null;
@@ -56,7 +60,8 @@ export const useGuestsStore = defineStore('guests', () => {
       guests.value = await guestRepository.getAll();
       lastFetchGuests.value = Date.now();
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Erro ao carregar convidados';
+      error.value =
+        err instanceof Error ? err.message : 'Erro ao carregar convidados';
       console.error('[GuestsStore] Erro:', err);
     } finally {
       loading.value = false;
@@ -64,7 +69,8 @@ export const useGuestsStore = defineStore('guests', () => {
   };
 
   const fetchStats = async (force = false): Promise<void> => {
-    if (!force && !shouldRefetch(lastFetchStats.value) && stats.value.total > 0) return;
+    if (!force && !shouldRefetch(lastFetchStats.value) && stats.value.total > 0)
+      return;
 
     try {
       stats.value = await guestRepository.getStats();
@@ -75,7 +81,11 @@ export const useGuestsStore = defineStore('guests', () => {
   };
 
   const fetchCheckedIn = async (force = false): Promise<void> => {
-    if (!force && !shouldRefetch(lastFetchCheckins.value) && checkedInGuests.value.length > 0)
+    if (
+      !force &&
+      !shouldRefetch(lastFetchCheckins.value) &&
+      checkedInGuests.value.length > 0
+    )
       return;
 
     try {
