@@ -212,3 +212,26 @@ export const smoothScrollTo = (selector: string, offset = 0): void => {
     window.scrollTo({ top, behavior: 'smooth' });
   }
 };
+
+/**
+ * Formata tamanho de arquivo (bytes → KB/MB)
+ */
+export const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+/**
+ * Formata data/hora para exibição compacta (sem ano)
+ */
+export const formatDateTime = (dateStr?: string): string => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};

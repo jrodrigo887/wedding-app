@@ -1,6 +1,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { supabase } from '@shared/lib/supabase';
 import { usePhotosStore } from '@/features/photo-state';
+import { usePhotoInteractionsStore } from './usePhotoInteractionsStore';
 import { storageService } from '@shared/api/storageService';
 import type { Photo } from '@/entities/photo';
 import type { PhotoComment } from '@/entities/comment';
@@ -11,6 +12,7 @@ import type { PhotoComment } from '@/entities/comment';
  */
 export function usePhotoRealtime() {
   const store = usePhotosStore();
+  const interactionsStore = usePhotoInteractionsStore();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const channel = ref<any>(null);
   const isConnected = ref(false);
@@ -100,7 +102,7 @@ export function usePhotoRealtime() {
         },
         payload => {
           const like = payload.new as { foto_id: number };
-          store.handleNewLike(like.foto_id);
+          interactionsStore.handleNewLike(like.foto_id);
         }
       )
       // Novos comentários
@@ -113,7 +115,7 @@ export function usePhotoRealtime() {
         },
         payload => {
           const comment = payload.new as PhotoComment;
-          store.handleNewComment(comment.foto_id, comment);
+          interactionsStore.handleNewComment(comment.foto_id, comment);
         }
       )
       .subscribe(status => {

@@ -5,7 +5,14 @@
       "Bash(npm install:*)",
       "Bash(npm run build:*)",
       "Bash(npx vue-tsc:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(xargs grep -l -i \"tenant\")",
+      "Bash(wc -l \"/c/Users/joaof/Downloads/list-presets/wedding-gift-list/src/entities/photo/ui\"/*.vue)",
+      "Bash(xargs wc -l)",
+      "Bash(find \"/c/Users/joaof/Downloads/list-presets/wedding-gift-list/src/pages\" -name \"*.vue\" -exec basename {} ;)",
+      "Bash(xargs cat)",
+      "Bash(ls -la entities/*/)",
+      "Bash(done)"
     ]
   },
   "enabledPlugins": {

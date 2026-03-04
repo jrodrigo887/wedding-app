@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { usePhotosStore } from '@/features/photo-state';
 import { usePhotoRealtime } from '../model/usePhotoRealtime';
+import { usePhotoInteractionsStore } from '../model/usePhotoInteractionsStore';
 import { MediaCard } from '@/entities/photo';
 
 /**
@@ -10,6 +11,7 @@ import { MediaCard } from '@/entities/photo';
  */
 
 const store = usePhotosStore();
+const interactionsStore = usePhotoInteractionsStore();
 const { isConnected } = usePhotoRealtime();
 
 const emit = defineEmits<{
@@ -70,7 +72,7 @@ onUnmounted(() => {
 });
 
 const handleLike = (photoId: number) => {
-  store.toggleLike(photoId);
+  interactionsStore.toggleLike(photoId);
 };
 
 const handleView = (photo: (typeof store.photos)[0]) => {

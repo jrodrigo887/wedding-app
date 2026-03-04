@@ -1,8 +1,7 @@
 // Repository Factory - Composition Root (app layer)
-// Cria instancias de repositories baseado na configuracao do tenant
-// Esta e a unica camada que pode conhecer implementacoes concretas de infra
+// Cria instâncias singleton de repositories para o Supabase
 
-import { useTenant } from '@shared/config/tenant';
+import { APP_TENANT_ID } from '@shared/config/constants';
 
 // Interfaces (de entities — camada 5)
 import type { IGuestRepository } from '@/entities/guest';
@@ -16,104 +15,36 @@ import { ContractRepositorySupabase } from '@/features/contract-management/api/s
 import { RsvpRepositorySupabase } from '@/features/rsvp-confirmation/api/supabaseRsvpRepository';
 import { PhotoRepositorySupabase } from '@/features/photo-state/api/supabasePhotoRepository';
 
-// Cache de instancias para evitar criacao multipla
-const repositoryCache = new Map<string, unknown>();
+// Singletons — criados uma única vez com o ID fixo da aplicação
+let guestRepo: IGuestRepository | null = null;
+let contractRepo: IContractRepository | null = null;
+let rsvpRepo: IRsvpRepository | null = null;
+let photoRepo: IPhotoRepository | null = null;
 
-function getOrCreate<T>(key: string, factory: () => T): T {
-  if (!repositoryCache.has(key)) {
-    repositoryCache.set(key, factory());
-  }
-  return repositoryCache.get(key) as T;
-}
-
-/**
- * Limpa o cache de repositories
- * Util quando o tenant muda
- */
-export function clearRepositoryCache(): void {
-  repositoryCache.clear();
-}
-
-/**
- * Factory para GuestRepository
- */
 export function createGuestRepository(): IGuestRepository {
-  const tenant = useTenant();
-  const cacheKey = `guest-${tenant.id}-${tenant.backend}`;
-
-  return getOrCreate(cacheKey, () => {
-    switch (tenant.backend) {
-      case 'supabase':
-        return new GuestRepositorySupabase(tenant.id);
-      case 'firebase':
-        throw new Error('Firebase backend nao implementado ainda');
-      case 'custom':
-        throw new Error('Custom backend nao implementado ainda');
-      default:
-        throw new Error(`Backend nao suportado: ${tenant.backend}`);
-    }
-  });
+  if (!guestRepo) {
+    guestRepo = new GuestRepositorySupabase(APP_TENANT_ID);
+  }
+  return guestRepo;
 }
 
-/**
- * Factory para ContractRepository
- */
 export function createContractRepository(): IContractRepository {
-  const tenant = useTenant();
-  const cacheKey = `contract-${tenant.id}-${tenant.backend}`;
-
-  return getOrCreate(cacheKey, () => {
-    switch (tenant.backend) {
-      case 'supabase':
-        return new ContractRepositorySupabase(tenant.id);
-      case 'firebase':
-        throw new Error('Firebase backend nao implementado ainda');
-      case 'custom':
-        throw new Error('Custom backend nao implementado ainda');
-      default:
-        throw new Error(`Backend nao suportado: ${tenant.backend}`);
-    }
-  });
+  if (!contractRepo) {
+    contractRepo = new ContractRepositorySupabase(APP_TENANT_ID);
+  }
+  return contractRepo;
 }
 
-/**
- * Factory para RsvpRepository
- */
 export function createRsvpRepository(): IRsvpRepository {
-  const tenant = useTenant();
-  const cacheKey = `rsvp-${tenant.id}-${tenant.backend}`;
-
-  return getOrCreate(cacheKey, () => {
-    switch (tenant.backend) {
-      case 'supabase':
-        return new RsvpRepositorySupabase(tenant.id);
-      case 'firebase':
-        throw new Error('Firebase backend nao implementado ainda');
-      case 'custom':
-        throw new Error('Custom backend nao implementado ainda');
-      default:
-        throw new Error(`Backend nao suportado: ${tenant.backend}`);
-    }
-  });
+  if (!rsvpRepo) {
+    rsvpRepo = new RsvpRepositorySupabase(APP_TENANT_ID);
+  }
+  return rsvpRepo;
 }
 
-/**
- * Factory para PhotoRepository
- */
 export function createPhotoRepository(): IPhotoRepository {
-  const tenant = useTenant();
-  const cacheKey = `photo-${tenant.id}-${tenant.backend}`;
-
-  return getOrCreate(cacheKey, () => {
-    switch (tenant.backend) {
-      case 'supabase':
-        return new PhotoRepositorySupabase(tenant.id);
-      case 'firebase':
-        throw new Error('Firebase backend nao implementado ainda');
-      case 'custom':
-        throw new Error('Custom backend nao implementado ainda');
-      default:
-        throw new Error(`Backend nao suportado: ${tenant.backend}`);
-    }
-  });
+  if (!photoRepo) {
+    photoRepo = new PhotoRepositorySupabase(APP_TENANT_ID);
+  }
+  return photoRepo;
 }

@@ -17,11 +17,13 @@ export class GuestRepositorySupabase {
     const { data, error } = await supabase
       .from(this.TABLE)
       .select('*')
-      .eq('tenant_id', this.tenantId)
       .order('nome', { ascending: true });
 
     if (error) {
-      console.error('[GuestRepositorySupabase] Erro ao buscar convidados:', error);
+      console.error(
+        '[GuestRepositorySupabase] Erro ao buscar convidados:',
+        error
+      );
       throw new Error(error.message);
     }
 
@@ -33,7 +35,7 @@ export class GuestRepositorySupabase {
       .from(this.TABLE)
       .select('*')
       .eq('id', id)
-      .eq('tenant_id', this.tenantId)
+
       .single();
 
     if (error) {
@@ -49,7 +51,7 @@ export class GuestRepositorySupabase {
       .from(this.TABLE)
       .select('*')
       .ilike('codigo', code)
-      .eq('tenant_id', this.tenantId)
+
       .single();
 
     if (error) {
@@ -62,19 +64,16 @@ export class GuestRepositorySupabase {
 
   async getStats(): Promise<GuestStats> {
     const [totalResult, confirmedResult, checkedInResult] = await Promise.all([
+      supabase.from(this.TABLE).select('*', { count: 'exact', head: true }),
       supabase
         .from(this.TABLE)
         .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', this.tenantId),
-      supabase
-        .from(this.TABLE)
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', this.tenantId)
+
         .eq('confirmado', true),
       supabase
         .from(this.TABLE)
         .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', this.tenantId)
+
         .eq('checkin', true),
     ]);
 
@@ -94,12 +93,15 @@ export class GuestRepositorySupabase {
     const { data, error } = await supabase
       .from(this.TABLE)
       .select('*')
-      .eq('tenant_id', this.tenantId)
+
       .eq('checkin', true)
       .order('horario_entrada', { ascending: false });
 
     if (error) {
-      console.error('[GuestRepositorySupabase] Erro ao buscar check-ins:', error);
+      console.error(
+        '[GuestRepositorySupabase] Erro ao buscar check-ins:',
+        error
+      );
       return [];
     }
 
@@ -118,9 +120,7 @@ export class GuestRepositorySupabase {
         checkin: true,
         horario_entrada: new Date().toISOString(),
       })
-      .eq('id', guest.id)
-      .eq('tenant_id', this.tenantId);
-
+      .eq('id', guest.id);
     if (error) {
       throw new Error(error.message);
     }

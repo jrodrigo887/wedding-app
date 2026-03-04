@@ -123,7 +123,7 @@
             </span>
           </div>
           <span class="photo-moderation__date">{{
-            formatDate(photo.created_at)
+            formatDateTime(photo.created_at)
           }}</span>
           <p
             v-if="photo.caption"
@@ -156,6 +156,7 @@
 import { ref, onMounted } from 'vue';
 import { usePhotosStore } from '@/features/photo-state';
 import { formatDuration } from '@/features/photo-upload';
+import { formatDateTime } from '@shared/utils';
 import type { Photo } from '@/entities/photo';
 
 /**
@@ -212,17 +213,6 @@ const handleBulkApprove = async () => {
   await store.bulkApprove(selectedIds.value);
   selectedIds.value = [];
   approving.value = false;
-};
-
-const formatDate = (dateStr?: string): string => {
-  if (!dateStr) return '';
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 };
 
 const isVideo = (photo: Photo): boolean => photo.media_type === 'video';

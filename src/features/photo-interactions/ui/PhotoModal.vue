@@ -42,7 +42,7 @@
                   {{ photo.nome_convidado }}
                 </span>
                 <span class="photo-modal__date">
-                  {{ formatDate(photo.created_at) }}
+                  {{ formatDateTime(photo.created_at) }}
                 </span>
               </div>
               <span
@@ -84,7 +84,7 @@
                 Comentários ({{ photo.comments_count || 0 }})
               </h3>
               <CommentSection
-                :comments="store.selectedPhotoComments"
+                :comments="interactionsStore.selectedPhotoComments"
                 :current-user-code="store.currentGuestCode"
                 @add="handleAddComment"
               />
@@ -100,7 +100,9 @@
 import { ref, watch, computed } from 'vue';
 import type { Photo } from '@/entities/photo';
 import { usePhotosStore } from '@/features/photo-state';
+import { usePhotoInteractionsStore } from '../model/usePhotoInteractionsStore';
 import { downloadSinglePhoto, formatDuration } from '@/features/photo-upload';
+import { formatDateTime } from '@shared/utils';
 import LikeButton from './LikeButton.vue';
 import CommentSection from './CommentSection.vue';
 
@@ -115,6 +117,7 @@ const emit = defineEmits<{
 }>();
 
 const store = usePhotosStore();
+const interactionsStore = usePhotoInteractionsStore();
 const downloading = ref(false);
 const videoRef = ref<HTMLVideoElement | null>(null);
 
@@ -126,7 +129,7 @@ watch(
   () => props.photo,
   async (newPhoto, oldPhoto) => {
     if (newPhoto) {
-      await store.fetchPhotoComments(newPhoto.id!);
+      await interactionsStore.fetchPhotoComments(newPhoto.id!);
     }
     if (oldPhoto && videoRef.value) {
       videoRef.value.pause();
@@ -137,13 +140,13 @@ watch(
 
 const handleLike = () => {
   if (props.photo) {
-    store.toggleLike(props.photo.id!);
+    interactionsStore.toggleLike(props.photo.id!);
   }
 };
 
 const handleAddComment = async (texto: string) => {
   if (props.photo) {
-    await store.addComment(props.photo.id!, texto);
+    await interactionsStore.addComment(props.photo.id!, texto);
   }
 };
 
@@ -166,17 +169,6 @@ const handleClose = () => {
   emit('close');
 };
 
-const formatDate = (dateStr?: string): string => {
-  if (!dateStr) return '';
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
 </script>
 
 <style scoped>

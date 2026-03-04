@@ -4,3 +4,4 @@ export { default as PhotoModal } from './ui/PhotoModal.vue';
 export { default as PhotoFeed } from './ui/PhotoFeed.vue';
 
 export { usePhotoRealtime } from './model/usePhotoRealtime';
+export { usePhotoInteractionsStore } from './model/usePhotoInteractionsStore';

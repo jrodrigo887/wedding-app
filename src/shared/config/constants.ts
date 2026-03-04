@@ -1,3 +1,6 @@
+// Identificador fixo da aplicação (sem multi-tenancy)
+export const APP_TENANT_ID = 'default';
+
 export const APP_CONFIG = {
   APP_NAME: 'Lista de Casamento',
   BRIDE_NAME: 'Rodrigo',

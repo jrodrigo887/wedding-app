@@ -17,11 +17,13 @@ export class ContractRepositorySupabase {
     const { data, error } = await supabase
       .from(this.TABLE)
       .select('*')
-      .eq('tenant_id', this.tenantId)
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('[ContractRepositorySupabase] Erro ao buscar contratos:', error);
+      console.error(
+        '[ContractRepositorySupabase] Erro ao buscar contratos:',
+        error
+      );
       throw new Error(error.message);
     }
 
@@ -33,7 +35,6 @@ export class ContractRepositorySupabase {
       .from(this.TABLE)
       .select('*')
       .eq('id', id)
-      .eq('tenant_id', this.tenantId)
       .single();
 
     if (error) {
@@ -59,7 +60,10 @@ export class ContractRepositorySupabase {
       .single();
 
     if (error) {
-      console.error('[ContractRepositorySupabase] Erro ao criar contrato:', error);
+      console.error(
+        '[ContractRepositorySupabase] Erro ao criar contrato:',
+        error
+      );
       throw new Error(error.message);
     }
 
@@ -77,12 +81,15 @@ export class ContractRepositorySupabase {
         pago: form.pago ? Number(form.pago) : null,
       })
       .eq('id', id)
-      .eq('tenant_id', this.tenantId)
+
       .select()
       .single();
 
     if (error) {
-      console.error('[ContractRepositorySupabase] Erro ao atualizar contrato:', error);
+      console.error(
+        '[ContractRepositorySupabase] Erro ao atualizar contrato:',
+        error
+      );
       throw new Error(error.message);
     }
 
@@ -90,14 +97,12 @@ export class ContractRepositorySupabase {
   }
 
   async delete(id: number): Promise<void> {
-    const { error } = await supabase
-      .from(this.TABLE)
-      .delete()
-      .eq('id', id)
-      .eq('tenant_id', this.tenantId);
-
+    const { error } = await supabase.from(this.TABLE).delete().eq('id', id);
     if (error) {
-      console.error('[ContractRepositorySupabase] Erro ao excluir contrato:', error);
+      console.error(
+        '[ContractRepositorySupabase] Erro ao excluir contrato:',
+        error
+      );
       throw new Error(error.message);
     }
   }

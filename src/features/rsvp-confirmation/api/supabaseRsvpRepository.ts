@@ -8,7 +8,10 @@ import type {
   SendQRCodeEmailParams,
 } from '@/entities/guest';
 
-const syncToGoogleScript = async (action: string, data: Record<string, string>): Promise<void> => {
+const syncToGoogleScript = async (
+  action: string,
+  data: Record<string, string>
+): Promise<void> => {
   const googleScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
 
   if (!googleScriptUrl) {
@@ -92,7 +95,10 @@ export class RsvpRepository implements IRsvpRepository {
       .eq('id', guest.id);
 
     if (updateError) {
-      console.error('[RsvpRepository] Erro ao confirmar presença:', updateError);
+      console.error(
+        '[RsvpRepository] Erro ao confirmar presença:',
+        updateError
+      );
       throw new Error(updateError.message);
     }
 
@@ -194,7 +200,9 @@ export class RsvpRepository implements IRsvpRepository {
             minute: '2-digit',
           })
         : '';
-      throw new Error(`Check-in já realizado${horarioAnterior ? ' às ' + horarioAnterior : ''}`);
+      throw new Error(
+        `Check-in já realizado${horarioAnterior ? ' às ' + horarioAnterior : ''}`
+      );
     }
 
     const now = new Date();
@@ -212,7 +220,10 @@ export class RsvpRepository implements IRsvpRepository {
       .eq('id', guest.id);
 
     if (updateError) {
-      console.error('[RsvpRepository] Erro ao registrar check-in:', updateError);
+      console.error(
+        '[RsvpRepository] Erro ao registrar check-in:',
+        updateError
+      );
       throw new Error(updateError.message);
     }
 
@@ -237,7 +248,10 @@ export class RsvpRepository implements IRsvpRepository {
       .eq('checkin', true);
 
     if (error) {
-      console.error('[RsvpRepository] Erro ao buscar contagem de check-ins:', error);
+      console.error(
+        '[RsvpRepository] Erro ao buscar contagem de check-ins:',
+        error
+      );
       return 0;
     }
 
@@ -247,8 +261,14 @@ export class RsvpRepository implements IRsvpRepository {
   async getStats(): Promise<RsvpStats> {
     const [totalResult, confirmedResult, checkedInResult] = await Promise.all([
       supabase.from(this.TABLE).select('*', { count: 'exact', head: true }),
-      supabase.from(this.TABLE).select('*', { count: 'exact', head: true }).eq('confirmado', true),
-      supabase.from(this.TABLE).select('*', { count: 'exact', head: true }).eq('checkin', true),
+      supabase
+        .from(this.TABLE)
+        .select('*', { count: 'exact', head: true })
+        .eq('confirmado', true),
+      supabase
+        .from(this.TABLE)
+        .select('*', { count: 'exact', head: true })
+        .eq('checkin', true),
     ]);
 
     const total = totalResult.count || 0;
@@ -307,7 +327,9 @@ export class RsvpRepository implements IRsvpRepository {
       return data;
     } catch (error) {
       console.error('[RsvpRepository] Erro ao enviar email:', error);
-      throw new Error(error instanceof Error ? error.message : 'Erro ao enviar email');
+      throw new Error(
+        error instanceof Error ? error.message : 'Erro ao enviar email'
+      );
     }
   }
 
@@ -335,7 +357,10 @@ export const rsvpRepository = new RsvpRepository();
  * RsvpRepositorySupabase - Implementação com suporte a multi-tenancy
  * Usada pelo repositoryFactory (app/providers)
  */
-export class RsvpRepositorySupabase extends RsvpRepository implements IRsvpRepository {
+export class RsvpRepositorySupabase
+  extends RsvpRepository
+  implements IRsvpRepository
+{
   readonly tenantId: string;
 
   constructor(tenantId: string) {
@@ -349,24 +374,27 @@ export class RsvpRepositorySupabase extends RsvpRepository implements IRsvpRepos
       .from('convidados')
       .select('*')
       .ilike('codigo', code)
-      .eq('tenant_id', this.tenantId)
+
       .single();
     if (error) {
       if (error.code === 'PGRST116') {
-        throw new Error('Código não encontrado na lista de convidados. Por favor, verifique com os noivos.');
+        throw new Error(
+          'Código não encontrado na lista de convidados. Por favor, verifique com os noivos.'
+        );
       }
       throw new Error(error.message);
     }
     return this.mapToRsvpGuestPublic(data);
   }
 
-  override async confirmPresence(code: string): Promise<ConfirmPresenceResponse> {
+  override async confirmPresence(
+    code: string
+  ): Promise<ConfirmPresenceResponse> {
     const guest = await this.getByCode(code);
     const { error } = await supabase
       .from('convidados')
       .update({ confirmado: true, data_confirmacao: new Date().toISOString() })
-      .eq('id', guest.id)
-      .eq('tenant_id', this.tenantId);
+      .eq('id', guest.id);
     if (error) throw new Error(error.message);
     syncToGoogleScript('confirmPresence', { code: guest.codigo });
     return {
@@ -378,13 +406,14 @@ export class RsvpRepositorySupabase extends RsvpRepository implements IRsvpRepos
     };
   }
 
-  override async cancelPresence(code: string): Promise<ConfirmPresenceResponse> {
+  override async cancelPresence(
+    code: string
+  ): Promise<ConfirmPresenceResponse> {
     const guest = await this.getByCode(code);
     const { error } = await supabase
       .from('convidados')
       .update({ confirmado: false, data_confirmacao: new Date().toISOString() })
-      .eq('id', guest.id)
-      .eq('tenant_id', this.tenantId);
+      .eq('id', guest.id);
     if (error) throw new Error(error.message);
     syncToGoogleScript('cancelPresence', { code: guest.codigo });
     return {
@@ -411,8 +440,7 @@ export class RsvpRepositorySupabase extends RsvpRepository implements IRsvpRepos
     const { error } = await supabase
       .from('convidados')
       .update({ checkin: true, horario_entrada: now.toISOString() })
-      .eq('id', guest.id)
-      .eq('tenant_id', this.tenantId);
+      .eq('id', guest.id);
     if (error) throw new Error(error.message);
     syncToGoogleScript('registerCheckin', { code: guest.codigo });
     return {
@@ -420,7 +448,10 @@ export class RsvpRepositorySupabase extends RsvpRepository implements IRsvpRepos
       message: guest.parceiro
         ? `Check-in realizado para ${guest.nome} e ${guest.parceiro}!`
         : `Check-in realizado para ${guest.nome}!`,
-      horario: now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      horario: now.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
     };
   }
 
@@ -428,7 +459,7 @@ export class RsvpRepositorySupabase extends RsvpRepository implements IRsvpRepos
     const { count, error } = await supabase
       .from('convidados')
       .select('*', { count: 'exact', head: true })
-      .eq('tenant_id', this.tenantId)
+
       .eq('checkin', true);
     if (error) return 0;
     return count || 0;
@@ -436,9 +467,15 @@ export class RsvpRepositorySupabase extends RsvpRepository implements IRsvpRepos
 
   override async getStats(): Promise<RsvpStats> {
     const [t, c, ch] = await Promise.all([
-      supabase.from('convidados').select('*', { count: 'exact', head: true }).eq('tenant_id', this.tenantId),
-      supabase.from('convidados').select('*', { count: 'exact', head: true }).eq('tenant_id', this.tenantId).eq('confirmado', true),
-      supabase.from('convidados').select('*', { count: 'exact', head: true }).eq('tenant_id', this.tenantId).eq('checkin', true),
+      supabase.from('convidados').select('*', { count: 'exact', head: true }),
+      supabase
+        .from('convidados')
+        .select('*', { count: 'exact', head: true })
+        .eq('confirmado', true),
+      supabase
+        .from('convidados')
+        .select('*', { count: 'exact', head: true })
+        .eq('checkin', true),
     ]);
     const total = t.count || 0;
     const confirmed = c.count || 0;
@@ -450,11 +487,13 @@ export class RsvpRepositorySupabase extends RsvpRepository implements IRsvpRepos
     const { data, error } = await supabase
       .from('convidados')
       .select('*')
-      .eq('tenant_id', this.tenantId)
+
       .eq('checkin', true)
       .order('horario_entrada', { ascending: false });
     if (error) return [];
-    return (data || []).map((item: Record<string, unknown>) => this.mapToRsvpGuestPublic(item));
+    return (data || []).map((item: Record<string, unknown>) =>
+      this.mapToRsvpGuestPublic(item)
+    );
   }
 
   private mapToRsvpGuestPublic(data: Record<string, unknown>): RsvpGuest {

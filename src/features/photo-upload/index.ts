@@ -14,7 +14,6 @@ export {
   extractPosterFrame,
   getVideoDuration,
   formatDuration,
-  formatFileSize as formatVideoFileSize,
   type VideoValidationResult,
 } from './api/videoCompressor';
 export { storageService } from '@shared/api/storageService';
