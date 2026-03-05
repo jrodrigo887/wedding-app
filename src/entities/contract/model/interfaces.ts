@@ -7,8 +7,8 @@ import type { Contract, ContractForm } from './types';
  */
 export interface IContractRepository {
   getAll(): Promise<Contract[]>;
-  getById(id: number): Promise<Contract | null>;
+  getById(id: string): Promise<Contract | null>;
   create(data: ContractForm): Promise<Contract>;
-  update(id: number, data: ContractForm): Promise<Contract>;
-  delete(id: number): Promise<void>;
+  update(id: string, data: ContractForm): Promise<Contract>;
+  delete(id: string): Promise<void>;
 }

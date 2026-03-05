@@ -1,8 +1,8 @@
 export interface Contract {
-  id?: number;
+  id?: string;          // uuid no banco (gen_random_uuid)
   responsavel: string | null;
   empresa: string | null;
-  contato: string | null;
+  contato: number | null; // bigint no banco
   valor: number | null;
   pago: number | null;
   created_at?: string;
@@ -12,7 +12,7 @@ export interface Contract {
 export interface ContractForm {
   responsavel: string;
   empresa: string;
-  contato: string;
+  contato: string;        // campo de texto no form; convertido para number no repositório
   valor: number | string;
   pago: number | string;
 }

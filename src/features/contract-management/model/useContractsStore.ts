@@ -60,13 +60,13 @@ export const useContractsStore = defineStore('contracts', () => {
     return contract;
   };
 
-  const updateContract = async (id: number, form: ContractForm): Promise<Contract> => {
+  const updateContract = async (id: string, form: ContractForm): Promise<Contract> => {
     const contract = await contractRepository.update(id, form);
     await fetchContracts(true);
     return contract;
   };
 
-  const deleteContract = async (id: number): Promise<void> => {
+  const deleteContract = async (id: string): Promise<void> => {
     await contractRepository.delete(id);
     await fetchContracts(true);
   };
@@ -75,7 +75,7 @@ export const useContractsStore = defineStore('contracts', () => {
     await fetchContracts(true);
   };
 
-  const getById = (id: number): Contract | undefined => {
+  const getById = (id: string): Contract | undefined => {
     return contracts.value.find(c => c.id === id);
   };
 

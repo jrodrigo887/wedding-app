@@ -117,7 +117,7 @@ watch(
       form.value = {
         responsavel: contract.responsavel || '',
         empresa: contract.empresa || '',
-        contato: contract.contato || '',
+        contato: contract.contato?.toString() ?? '',
         valor: contract.valor ?? '',
         pago: contract.pago ?? '',
       };

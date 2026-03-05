@@ -9,9 +9,10 @@ export interface Guest {
   confirmado: boolean;
   data_confirmacao?: string;
   checkin?: boolean;
-  entrada_confirmada?: boolean;
+  checkin?: boolean; // alias local de checkin (não existe no DB)
   horario_entrada?: string;
   observacoes?: string;
+  invitation_delivery?: boolean; // convite entregue
   created_at?: string;
   updated_at?: string;
 }

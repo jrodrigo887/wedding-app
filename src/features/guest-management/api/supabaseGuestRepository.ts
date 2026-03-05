@@ -7,11 +7,8 @@ import type { Guest, GuestStats } from '@/entities/guest';
  */
 export class GuestRepositorySupabase {
   private readonly TABLE = 'convidados';
-  readonly tenantId: string;
 
-  constructor(tenantId: string) {
-    this.tenantId = tenantId;
-  }
+  constructor() {}
 
   async getAll(): Promise<Guest[]> {
     const { data, error } = await supabase
@@ -68,12 +65,10 @@ export class GuestRepositorySupabase {
       supabase
         .from(this.TABLE)
         .select('*', { count: 'exact', head: true })
-
         .eq('confirmado', true),
       supabase
         .from(this.TABLE)
         .select('*', { count: 'exact', head: true })
-
         .eq('checkin', true),
     ]);
 
@@ -138,9 +133,10 @@ export class GuestRepositorySupabase {
       confirmado: (data.confirmado as boolean) || false,
       data_confirmacao: data.data_confirmacao as string,
       checkin: (data.checkin as boolean) || false,
-      entrada_confirmada: (data.checkin as boolean) || false,
+      checkin: (data.checkin as boolean) || false,
       horario_entrada: (data.horario_entrada as string) || '',
       observacoes: data.observacoes as string,
+      invitation_delivery: (data.invitation_delivery as boolean) || false,
       created_at: data.created_at as string,
       updated_at: data.updated_at as string,
     };

@@ -1,8 +1,3 @@
-// Repository Factory - Composition Root (app layer)
-// Cria instâncias singleton de repositories para o Supabase
-
-import { APP_TENANT_ID } from '@shared/config/constants';
-
 // Interfaces (de entities — camada 5)
 import type { IGuestRepository } from '@/entities/guest';
 import type { IContractRepository } from '@/entities/contract';
@@ -23,28 +18,28 @@ let photoRepo: IPhotoRepository | null = null;
 
 export function createGuestRepository(): IGuestRepository {
   if (!guestRepo) {
-    guestRepo = new GuestRepositorySupabase(APP_TENANT_ID);
+    guestRepo = new GuestRepositorySupabase();
   }
   return guestRepo;
 }
 
 export function createContractRepository(): IContractRepository {
   if (!contractRepo) {
-    contractRepo = new ContractRepositorySupabase(APP_TENANT_ID);
+    contractRepo = new ContractRepositorySupabase();
   }
   return contractRepo;
 }
 
 export function createRsvpRepository(): IRsvpRepository {
   if (!rsvpRepo) {
-    rsvpRepo = new RsvpRepositorySupabase(APP_TENANT_ID);
+    rsvpRepo = new RsvpRepositorySupabase();
   }
   return rsvpRepo;
 }
 
 export function createPhotoRepository(): IPhotoRepository {
   if (!photoRepo) {
-    photoRepo = new PhotoRepositorySupabase(APP_TENANT_ID);
+    photoRepo = new PhotoRepositorySupabase();
   }
   return photoRepo;
 }
