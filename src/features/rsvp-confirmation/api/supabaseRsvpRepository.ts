@@ -201,7 +201,7 @@ export class RsvpRepository implements IRsvpRepository {
           })
         : '';
       throw new Error(
-        `Check-in já realizado${horarioAnterior ? ' às ' + horarioAnterior : ''}`
+        `Check-in já realizado${horarioAnterior ? ` às ${horarioAnterior}` : ''}`
       );
     }
 
@@ -345,7 +345,6 @@ export class RsvpRepository implements IRsvpRepository {
       confirmado: (data.confirmado as boolean) || false,
       data_confirmacao: data.data_confirmacao as string,
       checkin: (data.checkin as boolean) || false,
-      entrada_confirmada: (data.checkin as boolean) || false,
       horario_entrada: (data.horario_entrada as string) || '',
     };
   }
@@ -361,11 +360,8 @@ export class RsvpRepositorySupabase
   extends RsvpRepository
   implements IRsvpRepository
 {
-  readonly tenantId: string;
-
-  constructor(tenantId: string) {
+  constructor() {
     super();
-    this.tenantId = tenantId;
   }
 
   override async getByCode(code: string): Promise<RsvpGuest> {
@@ -434,7 +430,7 @@ export class RsvpRepositorySupabase
             minute: '2-digit',
           })
         : '';
-      throw new Error(`Check-in já realizado${h ? ' às ' + h : ''}`);
+      throw new Error(`Check-in já realizado${h ? ` às ${h}` : ''}`);
     }
     const now = new Date();
     const { error } = await supabase
@@ -508,7 +504,6 @@ export class RsvpRepositorySupabase
       confirmado: (data.confirmado as boolean) || false,
       data_confirmacao: data.data_confirmacao as string,
       checkin: (data.checkin as boolean) || false,
-      entrada_confirmada: (data.checkin as boolean) || false,
       horario_entrada: (data.horario_entrada as string) || '',
     };
   }

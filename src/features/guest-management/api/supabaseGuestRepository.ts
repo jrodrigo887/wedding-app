@@ -133,7 +133,6 @@ export class GuestRepositorySupabase {
       confirmado: (data.confirmado as boolean) || false,
       data_confirmacao: data.data_confirmacao as string,
       checkin: (data.checkin as boolean) || false,
-      checkin: (data.checkin as boolean) || false,
       horario_entrada: (data.horario_entrada as string) || '',
       observacoes: data.observacoes as string,
       invitation_delivery: (data.invitation_delivery as boolean) || false,
