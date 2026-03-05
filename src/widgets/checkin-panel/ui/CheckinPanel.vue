@@ -28,7 +28,9 @@
 
         <!-- Form de busca -->
         <div class="checkin-form">
-          <p class="checkin-form__instruction">Digite ou escaneie o código do convidado</p>
+          <p class="checkin-form__instruction">
+            Digite ou escaneie o código do convidado
+          </p>
 
           <div class="checkin-form__input-group">
             <div class="checkin-form__input-wrapper">
@@ -81,18 +83,26 @@
               <span class="checkin-guest__icon">👤</span>
               <h3 class="checkin-guest__name">
                 {{ store.currentGuest.nome
-                }}{{ store.currentGuest.parceiro ? ` e ${store.currentGuest.parceiro}` : '' }}
+                }}{{
+                  store.currentGuest.parceiro
+                    ? ` e ${store.currentGuest.parceiro}`
+                    : ''
+                }}
               </h3>
             </div>
 
             <div class="checkin-guest__details">
               <div class="checkin-guest__detail">
                 <span class="checkin-guest__label">Código:</span>
-                <span class="checkin-guest__value">{{ store.currentGuest.codigo }}</span>
+                <span class="checkin-guest__value">{{
+                  store.currentGuest.codigo
+                }}</span>
               </div>
               <div class="checkin-guest__detail">
                 <span class="checkin-guest__label">Total de pessoas:</span>
-                <span class="checkin-guest__value">{{ store.totalPeople }}</span>
+                <span class="checkin-guest__value">{{
+                  store.totalPeople
+                }}</span>
               </div>
               <div class="checkin-guest__detail">
                 <span class="checkin-guest__label">RSVP:</span>
@@ -104,7 +114,11 @@
                       : 'checkin-guest__value--pending'
                   "
                 >
-                  {{ store.currentGuest.confirmado ? 'Confirmado' : 'Não confirmado' }}
+                  {{
+                    store.currentGuest.confirmado
+                      ? 'Confirmado'
+                      : 'Não confirmado'
+                  }}
                 </span>
               </div>
               <div class="checkin-guest__detail">
@@ -112,18 +126,18 @@
                 <span
                   class="checkin-guest__value"
                   :class="
-                    store.currentGuest.entrada_confirmada
+                    store.currentGuest.checkin
                       ? 'checkin-guest__value--confirmed'
                       : 'checkin-guest__value--pending'
                   "
                 >
-                  {{ store.currentGuest.entrada_confirmada ? 'Realizado' : 'Pendente' }}
+                  {{ store.currentGuest.checkin ? 'Realizado' : 'Pendente' }}
                 </span>
               </div>
             </div>
 
             <div
-              v-if="store.currentGuest.entrada_confirmada"
+              v-if="store.currentGuest.checkin"
               class="checkin-guest__already"
             >
               <span class="checkin-guest__already-icon">✅</span>
@@ -167,7 +181,9 @@
           <div class="checkin-success__card">
             <div class="checkin-success__icon">🎉</div>
             <h3 class="checkin-success__title">Check-in Realizado!</h3>
-            <p class="checkin-success__message">{{ store.lastCheckedInGuest }} entrou no evento</p>
+            <p class="checkin-success__message">
+              {{ store.lastCheckedInGuest }} entrou no evento
+            </p>
             <button
               class="checkin-success__button"
               @click="resetAll"
@@ -204,7 +220,12 @@ import { ref, nextTick, onBeforeUnmount, watch } from 'vue';
 import { APP_CONFIG } from '@shared/config/constants';
 import { Html5Qrcode } from 'html5-qrcode';
 import { useRsvpStore } from '@/features/rsvp-confirmation';
-import { useAuthPin, PinAuth, QRScanner, CheckinStats } from '@/features/guest-checkin';
+import {
+  useAuthPin,
+  PinAuth,
+  QRScanner,
+  CheckinStats,
+} from '@/features/guest-checkin';
 
 /**
  * Widget: CheckinPanel
@@ -327,7 +348,12 @@ const openScanner = async (): Promise<void> => {
       aspectRatio: 1.0,
     };
 
-    await html5QrCode.start({ facingMode: 'environment' }, config, onQrCodeSuccess, onQrCodeError);
+    await html5QrCode.start(
+      { facingMode: 'environment' },
+      config,
+      onQrCodeSuccess,
+      onQrCodeError
+    );
 
     scannerStatus.value = 'Aponte para o QR Code';
     scanning.value = true;
@@ -348,7 +374,8 @@ const onQrCodeSuccess = (decodedText: string): void => {
   if (extractedCode) {
     scannedCode.value = extractedCode;
   } else {
-    store.error = 'QR Code inválido. Certifique-se de usar o QR Code do convite.';
+    store.error =
+      'QR Code inválido. Certifique-se de usar o QR Code do convite.';
     setTimeout(() => {
       store.error = null;
       scanning.value = true;

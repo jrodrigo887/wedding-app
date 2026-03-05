@@ -41,12 +41,12 @@ A **Wedding Gift List Platform** é uma plataforma multi-tenant para gestão de 
 
 ### 1.2 Stakeholders
 
-| Stakeholder | Descrição | Interesse |
-|-------------|-----------|-----------|
-| **Noivos** | Proprietários do evento | Gestão completa do casamento |
-| **Convidados** | Participantes do evento | RSVP, check-in, fotos |
-| **Fornecedores** | Prestadores de serviço | Contratos e pagamentos |
-| **Administradores** | Gestores da plataforma | Multi-tenancy, configurações |
+| Stakeholder         | Descrição               | Interesse                    |
+| ------------------- | ----------------------- | ---------------------------- |
+| **Noivos**          | Proprietários do evento | Gestão completa do casamento |
+| **Convidados**      | Participantes do evento | RSVP, check-in, fotos        |
+| **Fornecedores**    | Prestadores de serviço  | Contratos e pagamentos       |
+| **Administradores** | Gestores da plataforma  | Multi-tenancy, configurações |
 
 ### 1.3 Características Multi-Tenant
 
@@ -63,6 +63,7 @@ A **Wedding Gift List Platform** é uma plataforma multi-tenant para gestão de 
 ```
 
 **Estratégias de Resolução de Tenant:**
+
 - Subdomain: `joao-maria.weddingapp.com`
 - Path: `weddingapp.com/joao-maria`
 - Query Parameter: `weddingapp.com?tenant=joao-maria`
@@ -103,11 +104,11 @@ A **Wedding Gift List Platform** é uma plataforma multi-tenant para gestão de 
 
 #### Atores Externos
 
-| Sistema Externo | Propósito | Protocolo |
-|-----------------|-----------|-----------|
-| **Supabase** | Banco de dados PostgreSQL + Storage de arquivos | REST/WebSocket |
-| **Google Sheets** | Backup de confirmações e check-ins | HTTPS (Apps Script) |
-| **Email API** | Envio de QR Codes e notificações | HTTPS |
+| Sistema Externo   | Propósito                                       | Protocolo           |
+| ----------------- | ----------------------------------------------- | ------------------- |
+| **Supabase**      | Banco de dados PostgreSQL + Storage de arquivos | REST/WebSocket      |
+| **Google Sheets** | Backup de confirmações e check-ins              | HTTPS (Apps Script) |
+| **Email API**     | Envio de QR Codes e notificações                | HTTPS               |
 
 ---
 
@@ -153,14 +154,14 @@ A **Wedding Gift List Platform** é uma plataforma multi-tenant para gestão de 
 
 #### Containers
 
-| Container | Tecnologia | Responsabilidade |
-|-----------|------------|------------------|
-| **Vue 3 SPA** | Vue 3 + TypeScript + Vite | Interface do usuário |
-| **Pinia Stores** | Pinia | Gerenciamento de estado |
-| **Domain Modules** | TypeScript | Lógica de domínio |
-| **Supabase Database** | PostgreSQL | Persistência de dados |
-| **Supabase Storage** | S3-compatible | Armazenamento de arquivos |
-| **Google Apps Script** | JavaScript | Sincronização de backup |
+| Container              | Tecnologia                | Responsabilidade          |
+| ---------------------- | ------------------------- | ------------------------- |
+| **Vue 3 SPA**          | Vue 3 + TypeScript + Vite | Interface do usuário      |
+| **Pinia Stores**       | Pinia                     | Gerenciamento de estado   |
+| **Domain Modules**     | TypeScript                | Lógica de domínio         |
+| **Supabase Database**  | PostgreSQL                | Persistência de dados     |
+| **Supabase Storage**   | S3-compatible             | Armazenamento de arquivos |
+| **Google Apps Script** | JavaScript                | Sincronização de backup   |
 
 ---
 
@@ -326,12 +327,12 @@ O **domínio principal** é a **Gestão de Eventos de Casamento**, que orquestra
 
 #### Classificação dos Subdomínios
 
-| Subdomínio | Tipo | Complexidade | Descrição |
-|------------|------|--------------|-----------|
-| **Guest Management** | Core | Alta | Diferencial competitivo - regras de RSVP e check-in |
-| **Photo Gallery** | Supporting | Média | Agrega valor mas não é diferencial |
-| **Contract Management** | Supporting | Média | Funcionalidade auxiliar |
-| **Platform (Auth/Tenant)** | Generic | Baixa | Infraestrutura comum |
+| Subdomínio                 | Tipo       | Complexidade | Descrição                                           |
+| -------------------------- | ---------- | ------------ | --------------------------------------------------- |
+| **Guest Management**       | Core       | Alta         | Diferencial competitivo - regras de RSVP e check-in |
+| **Photo Gallery**          | Supporting | Média        | Agrega valor mas não é diferencial                  |
+| **Contract Management**    | Supporting | Média        | Funcionalidade auxiliar                             |
+| **Platform (Auth/Tenant)** | Generic    | Baixa        | Infraestrutura comum                                |
 
 ---
 
@@ -380,12 +381,12 @@ O **domínio principal** é a **Gestão de Eventos de Casamento**, que orquestra
 
 #### Detalhamento dos Bounded Contexts
 
-| Bounded Context | Responsabilidade | Entidades Principais |
-|-----------------|------------------|---------------------|
-| **Admin Context** | Gestão administrativa de convidados e contratos | Guest, Contract, GuestStats, ContractStats |
-| **RSVP Context** | Confirmação de presença e check-in público | RsvpGuest, ConfirmPresenceResponse, CheckinResponse |
-| **Photos Context** | Galeria de fotos e interações sociais | Photo, PhotoLike, PhotoComment, PhotoStats |
-| **Auth Context** | Autenticação e autorização | User, Session, AuthState |
+| Bounded Context    | Responsabilidade                                | Entidades Principais                                |
+| ------------------ | ----------------------------------------------- | --------------------------------------------------- |
+| **Admin Context**  | Gestão administrativa de convidados e contratos | Guest, Contract, GuestStats, ContractStats          |
+| **RSVP Context**   | Confirmação de presença e check-in público      | RsvpGuest, ConfirmPresenceResponse, CheckinResponse |
+| **Photos Context** | Galeria de fotos e interações sociais           | Photo, PhotoLike, PhotoComment, PhotoStats          |
+| **Auth Context**   | Autenticação e autorização                      | User, Session, AuthState                            |
 
 ---
 
@@ -446,38 +447,38 @@ O **domínio principal** é a **Gestão de Eventos de Casamento**, que orquestra
 
 #### Padrões de Relacionamento
 
-| Upstream | Downstream | Padrão | Descrição |
-|----------|------------|--------|-----------|
-| Admin | RSVP | **Shared Kernel** | Compartilham o conceito de `Guest` e `codigo_convidado` |
-| Admin | Photos | **Customer/Supplier** | Photos consome dados de convidados para identificação |
-| Auth | Admin | **Conformist** | Admin se adapta ao modelo de autenticação do Supabase |
-| Auth | Photos | **ACL** | Photos traduz `codigo_convidado` para contexto de upload |
+| Upstream | Downstream | Padrão                | Descrição                                                |
+| -------- | ---------- | --------------------- | -------------------------------------------------------- |
+| Admin    | RSVP       | **Shared Kernel**     | Compartilham o conceito de `Guest` e `codigo_convidado`  |
+| Admin    | Photos     | **Customer/Supplier** | Photos consome dados de convidados para identificação    |
+| Auth     | Admin      | **Conformist**        | Admin se adapta ao modelo de autenticação do Supabase    |
+| Auth     | Photos     | **ACL**               | Photos traduz `codigo_convidado` para contexto de upload |
 
 #### Shared Kernel: Guest Identity
 
 ```typescript
 // Compartilhado entre Admin, RSVP e Photos
 interface SharedGuestIdentity {
-  codigo: string       // Identificador único do convidado
-  nome: string         // Nome para exibição
+  codigo: string; // Identificador único do convidado
+  nome: string; // Nome para exibição
 }
 
 // Admin Context - entidade completa
 interface Guest extends SharedGuestIdentity {
-  id: number
-  parceiro?: string
-  email?: string
-  telefone?: string
-  acompanhantes: number
-  confirmado: boolean
-  checkin: boolean
+  id: number;
+  parceiro?: string;
+  email?: string;
+  telefone?: string;
+  acompanhantes: number;
+  confirmado: boolean;
+  checkin: boolean;
   // ... campos administrativos
 }
 
 // RSVP Context - view pública
 interface RsvpGuest extends SharedGuestIdentity {
-  confirmado: boolean
-  data_confirmacao?: string
+  confirmado: boolean;
+  data_confirmacao?: string;
 }
 
 // Photos Context - referência mínima
@@ -515,7 +516,7 @@ interface PhotoUploadIdentity extends SharedGuestIdentity {
 │   │  - confirmado: boolean                 │                                    │
 │   │  - data_confirmacao?: timestamp        │                                    │
 │   │  - checkin: boolean                    │                                    │
-│   │  - entrada_confirmada?: boolean        │                                    │
+│   │  - checkin?: boolean        │                                    │
 │   │  - horario_entrada?: timestamp         │                                    │
 │   │  - observacoes?: text                  │                                    │
 │   │  - created_at: timestamp               │                                    │
@@ -607,7 +608,7 @@ interface PresenceStatus {
 // Value Object: CheckinStatus
 interface CheckinStatus {
   checkin: boolean;
-  entrada_confirmada?: boolean;
+  checkin?: boolean;
   horario_entrada?: Date;
 }
 
@@ -615,7 +616,7 @@ interface CheckinStatus {
 interface PaymentStatus {
   valor: number;
   pago: number;
-  restante: number;  // computed: valor - pago
+  restante: number; // computed: valor - pago
 }
 
 // Value Object: PhotoStats
@@ -625,15 +626,15 @@ interface PhotoStats {
   pending: number;
   totalLikes: number;
   totalComments: number;
-  totalPhotos: number;  // apenas fotos
-  totalVideos: number;  // apenas vídeos
+  totalPhotos: number; // apenas fotos
+  totalVideos: number; // apenas vídeos
 }
 
 // Value Object: GuestStats
 interface GuestStats {
   total: number;
   confirmed: number;
-  pending: number;      // total - confirmed
+  pending: number; // total - confirmed
   checkedIn: number;
 }
 ```
@@ -801,7 +802,7 @@ interface PaymentRegisteredEvent {
 │  │     confirmado: boolean DEFAULT false                            │            │
 │  │     data_confirmacao: timestamp                                  │            │
 │  │     checkin: boolean DEFAULT false                               │            │
-│  │     entrada_confirmada: boolean DEFAULT false                    │            │
+│  │     checkin: boolean DEFAULT false                    │            │
 │  │     horario_entrada: timestamp                                   │            │
 │  │     observacoes: text                                            │            │
 │  │     created_at: timestamp DEFAULT now()                          │            │
@@ -986,7 +987,7 @@ CREATE TABLE convidados (
 
     -- Check-in Status (Value Object: CheckinStatus)
     checkin BOOLEAN DEFAULT FALSE,
-    entrada_confirmada BOOLEAN DEFAULT FALSE,
+    checkin BOOLEAN DEFAULT FALSE,
     horario_entrada TIMESTAMP WITH TIME ZONE,
 
     -- Additional info
@@ -1307,27 +1308,27 @@ VALUES ('Casamento João & Maria', 'joao-maria', '2024-06-15');
 
 ## 6. Glossário Ubiquitous Language
 
-| Termo | Contexto | Definição |
-|-------|----------|-----------|
-| **Tenant** | Platform | Instância isolada de um casamento na plataforma |
-| **Convidado** | Guest Management | Pessoa convidada para o evento |
-| **Código** | Shared Kernel | Identificador único do convidado (ex: "JM001") |
-| **Parceiro** | Guest | Cônjuge/acompanhante principal do convidado |
-| **Acompanhantes** | Guest | Número de pessoas adicionais que virão com o convidado |
-| **RSVP** | RSVP Context | Processo de confirmação de presença |
-| **Confirmado** | RSVP | Status indicando que convidado confirmou presença |
-| **Check-in** | RSVP Context | Registro de entrada no evento |
-| **Entrada Confirmada** | Check-in | Verificação visual de que pessoa entrou no evento |
-| **Foto** | Photos Context | Imagem ou vídeo enviado por convidado |
-| **Mídia** | Photos Context | Termo genérico para foto ou vídeo |
-| **Aprovado** | Photos Context | Foto liberada para exibição pública |
-| **Curtida** | Photos Context | Interação de "like" em uma foto |
-| **Comentário** | Photos Context | Texto deixado em uma foto |
-| **Contrato** | Contract Context | Acordo com fornecedor do evento |
-| **Fornecedor** | Contract Context | Empresa que presta serviço para o casamento |
-| **Valor** | Contract | Custo total do contrato |
-| **Pago** | Contract | Valor já quitado do contrato |
-| **Restante** | Contract | Diferença entre valor e pago |
+| Termo                  | Contexto         | Definição                                              |
+| ---------------------- | ---------------- | ------------------------------------------------------ |
+| **Tenant**             | Platform         | Instância isolada de um casamento na plataforma        |
+| **Convidado**          | Guest Management | Pessoa convidada para o evento                         |
+| **Código**             | Shared Kernel    | Identificador único do convidado (ex: "JM001")         |
+| **Parceiro**           | Guest            | Cônjuge/acompanhante principal do convidado            |
+| **Acompanhantes**      | Guest            | Número de pessoas adicionais que virão com o convidado |
+| **RSVP**               | RSVP Context     | Processo de confirmação de presença                    |
+| **Confirmado**         | RSVP             | Status indicando que convidado confirmou presença      |
+| **Check-in**           | RSVP Context     | Registro de entrada no evento                          |
+| **Entrada Confirmada** | Check-in         | Verificação visual de que pessoa entrou no evento      |
+| **Foto**               | Photos Context   | Imagem ou vídeo enviado por convidado                  |
+| **Mídia**              | Photos Context   | Termo genérico para foto ou vídeo                      |
+| **Aprovado**           | Photos Context   | Foto liberada para exibição pública                    |
+| **Curtida**            | Photos Context   | Interação de "like" em uma foto                        |
+| **Comentário**         | Photos Context   | Texto deixado em uma foto                              |
+| **Contrato**           | Contract Context | Acordo com fornecedor do evento                        |
+| **Fornecedor**         | Contract Context | Empresa que presta serviço para o casamento            |
+| **Valor**              | Contract         | Custo total do contrato                                |
+| **Pago**               | Contract         | Valor já quitado do contrato                           |
+| **Restante**           | Contract         | Diferença entre valor e pago                           |
 
 ---
 
@@ -1340,6 +1341,7 @@ VALUES ('Casamento João & Maria', 'joao-maria', '2024-06-15');
 **Contexto:** Necessidade de isolar dados entre diferentes casamentos na mesma base.
 
 **Consequências:**
+
 - (+) Isolamento garantido pelo banco
 - (+) Simplifica código da aplicação
 - (-) Requer configuração cuidadosa de políticas
@@ -1351,6 +1353,7 @@ VALUES ('Casamento João & Maria', 'joao-maria', '2024-06-15');
 **Contexto:** Fotos e RSVP precisam identificar o mesmo convidado.
 
 **Consequências:**
+
 - (+) Consistência na identificação
 - (+) Permite relacionamentos sem FK hard
 - (-) Acoplamento entre contexts
@@ -1362,6 +1365,7 @@ VALUES ('Casamento João & Maria', 'joao-maria', '2024-06-15');
 **Contexto:** Convidados podem ser deletados, mas fotos devem permanecer.
 
 **Consequências:**
+
 - (+) Flexibilidade na gestão de dados
 - (+) Fotos independentes do ciclo de vida do convidado
 - (-) Possível inconsistência de dados

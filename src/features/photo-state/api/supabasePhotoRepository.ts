@@ -1,8 +1,8 @@
 import { supabase } from '@shared/lib/supabase';
 import { storageService } from '@shared/api/storageService';
 import { compressImage } from '@/features/photo-upload';
-import type { IPhotoRepository } from '@/entities/photo';
 import type {
+  IPhotoRepository,
   Photo,
   PhotoUploadData,
   PhotoUploadResponse,
@@ -23,11 +23,8 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
   private readonly COMMENTS_TABLE = 'foto_comentarios';
   private readonly MAX_PHOTOS_PER_GUEST = 20;
   private readonly MAX_VIDEOS_PER_GUEST = 5;
-  readonly tenantId: string;
 
-  constructor(tenantId: string) {
-    this.tenantId = tenantId;
-  }
+  constructor() {}
 
   async getApprovedPhotos(limit = 50, offset = 0): Promise<Photo[]> {
     const { data, error } = await supabase
@@ -154,7 +151,7 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
           mime_type: compressedFile.type,
           caption: uploadData.caption || null,
           aprovado: shouldAutoApprove,
-          tenant_id: this.tenantId,
+
           media_type: 'photo',
         })
         .select()
@@ -224,7 +221,7 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
           mime_type: uploadData.file.type,
           caption: uploadData.caption || null,
           aprovado: shouldAutoApprove,
-          tenant_id: this.tenantId,
+
           media_type: 'video',
           duration: uploadData.duration || null,
           poster_path: posterPath,
@@ -364,7 +361,6 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
     const { error } = await supabase.from(this.LIKES_TABLE).insert({
       foto_id: fotoId,
       codigo_convidado: codigoConvidado,
-      tenant_id: this.tenantId,
     });
 
     if (error && error.code !== '23505') {
@@ -444,7 +440,6 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
         codigo_convidado: commentData.codigo_convidado,
         nome_convidado: commentData.nome_convidado,
         texto: commentData.texto,
-        tenant_id: this.tenantId,
       })
       .select()
       .single();
@@ -554,7 +549,7 @@ export class PhotoRepositorySupabase implements IPhotoRepository {
       return false;
     }
 
-    const weddingDate = new Date(weddingDateStr + 'T00:00:00');
+    const weddingDate = new Date(`${weddingDateStr}T00:00:00`);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 

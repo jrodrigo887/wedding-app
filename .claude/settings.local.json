@@ -12,7 +12,10 @@
       "Bash(find \"/c/Users/joaof/Downloads/list-presets/wedding-gift-list/src/pages\" -name \"*.vue\" -exec basename {} ;)",
       "Bash(xargs cat)",
       "Bash(ls -la entities/*/)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(git add src/entities/contract/model/types.ts src/entities/contract/model/interfaces.ts src/entities/guest/model/types.ts src/features/contract-management/api/supabaseContractRepository.ts src/features/contract-management/model/useContractsStore.ts src/features/contract-management/ui/ContractForm.vue src/features/guest-management/api/supabaseGuestRepository.ts src/shared/config/constants.ts)",
+      "Bash(git commit:*)",
+      "Bash(git add src/features/guest-management/api/supabaseGuestRepository.ts src/features/rsvp-confirmation/api/supabaseRsvpRepository.ts src/entities/guest/model/types.ts)"
     ]
   },
   "enabledPlugins": {
