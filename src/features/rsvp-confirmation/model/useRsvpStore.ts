@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type {
-  RsvpGuest,
-  ConfirmPresenceResponse,
-  CheckinResponse,
-  RsvpStats,
+import {
+  type RsvpGuest,
+  type ConfirmPresenceResponse,
+  type CheckinResponse,
+  type RsvpStats,
+  createEmptyRsvpStats,
 } from '@/entities/guest';
-import { createEmptyRsvpStats } from '@/entities/guest';
 import { rsvpRepository } from '../api/supabaseRsvpRepository';
 
 export const useRsvpStore = defineStore('rsvp', () => {
@@ -116,11 +116,36 @@ export const useRsvpStore = defineStore('rsvp', () => {
     error.value = null;
 
     try {
-      await rsvpRepository.cancelPresence(code);
+      await rsvpRepository.declinePresence(code);
+      if (currentGuest.value) {
+        currentGuest.value.recusou = true;
+        currentGuest.value.confirmado = false;
+      }
       declined.value = true;
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : 'Erro ao registrar ausência. Tente novamente.';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const checkGuestByToken = async (token: string): Promise<void> => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      currentGuest.value = await rsvpRepository.getByToken(token);
+      if (currentGuest.value.confirmado) {
+        confirmed.value = true;
+      }
+      if (currentGuest.value.recusou) {
+        declined.value = true;
+      }
+    } catch (err) {
+      error.value =
+        err instanceof Error ? err.message : 'Link inválido. Verifique com os noivos.';
       throw err;
     } finally {
       loading.value = false;
@@ -190,11 +215,7 @@ export const useRsvpStore = defineStore('rsvp', () => {
     email: string;
     name: string;
   }): Promise<{ success: boolean; error?: string }> => {
-    try {
-      return await rsvpRepository.sendQRCodeEmail(params);
-    } catch (err) {
-      throw err;
-    }
+    return rsvpRepository.sendQRCodeEmail(params);
   };
 
   const resetRsvpFlow = (): void => {
@@ -247,6 +268,7 @@ export const useRsvpStore = defineStore('rsvp', () => {
     checkinRate,
     // Actions
     checkGuestCode,
+    checkGuestByToken,
     confirmPresence,
     cancelPresence,
     declinePresence,

@@ -10,8 +10,26 @@
         </p>
       </header>
 
-      <!-- Form de busca por código -->
-      <RsvpCard v-if="!store.currentGuest && !store.confirmed && !store.declined">
+      <!-- Carregando via link exclusivo -->
+      <RsvpCard v-if="viaLink && store.loading && !store.currentGuest">
+        <div class="rsvp-link-loading">
+          <div class="rsvp-link-loading__spinner" />
+          <p>Carregando seus dados...</p>
+        </div>
+      </RsvpCard>
+
+      <!-- Link inválido -->
+      <RsvpCard v-if="viaLink && store.error && !store.currentGuest && !store.confirmed && !store.declined">
+        <div class="rsvp-link-error">
+          <div class="rsvp-link-error__icon">❌</div>
+          <h2 class="rsvp-link-error__title">Link inválido</h2>
+          <p class="rsvp-link-error__message">{{ store.error }}</p>
+          <router-link to="/" class="rsvp-declined__link">Ver Lista de Presentes →</router-link>
+        </div>
+      </RsvpCard>
+
+      <!-- Form de busca por código (apenas quando não acessado via link) -->
+      <RsvpCard v-if="!viaLink && !store.currentGuest && !store.confirmed && !store.declined">
         <CodeInput
           v-model="code"
           :loading="store.loading"
@@ -80,21 +98,36 @@
         <div class="rsvp-success__icon">🎉</div>
         <h2 class="rsvp-success__title">Presença Confirmada!</h2>
         <p class="rsvp-success__message">
-          {{ store.confirmationMessage }}
+          {{
+            store.confirmationMessage ||
+            `Presença confirmada com sucesso, ${store.currentGuest?.nome}!`
+          }}
         </p>
 
         <QRCodeDisplay
+          v-model:email="guestEmail"
           :code="getFullCode()"
           :data-url="qrCodeDataUrl"
           :loading="qrCodeLoading"
-          :show-email-form="true"
-          v-model:email="guestEmail"
+          show-email-form
+          :confirmation-url="confirmationUrl"
           :email-sending="emailSending"
           :email-sent="emailSent"
           :email-error="emailError"
           @download="downloadQRCode"
           @send-email="sendQRCodeByEmail"
+          @share-whatsapp="handleShareWhatsApp"
         />
+
+        <!-- Cancelar quando acessado via link e já estava confirmado -->
+        <div v-if="viaLink" class="rsvp-success__cancel-area">
+          <button
+            class="rsvp-already-confirmed__cancel-link"
+            @click="showCancelModal = true"
+          >
+            Cancelar minha confirmação
+          </button>
+        </div>
 
         <p class="rsvp-success__see-you">Nos vemos no grande dia!</p>
         <p class="rsvp-success__date">{{ formattedWeddingDate }}</p>
@@ -184,18 +217,41 @@
         v-if="store.declined"
         class="rsvp-declined"
       >
-        <div class="rsvp-declined__icon">📝</div>
-        <h2 class="rsvp-declined__title">Ausência Registrada</h2>
-        <p class="rsvp-declined__message">
-          Registramos que você não poderá comparecer ao casamento.
-        </p>
-        <p class="rsvp-declined__note">
-          Sentiremos sua falta! Caso mude de ideia, você pode confirmar sua presença a qualquer
-          momento.
-        </p>
+        <div class="rsvp-declined__icon">😢</div>
+
+        <!-- Via link: mensagem personalizada com e-mail de contato -->
+        <template v-if="viaLink">
+          <h2 class="rsvp-declined__title">
+            Olá, {{ store.currentGuest?.nome }}!
+          </h2>
+          <p class="rsvp-declined__message">
+            Já registramos que você não poderá comparecer ao nosso casamento.
+          </p>
+          <p class="rsvp-declined__note">
+            Se mudou de ideia, entre em contato pelo e-mail
+            <a
+              :href="`mailto:${APP_CONFIG.CONTACT_EMAIL}`"
+              class="rsvp-declined__email"
+            >{{ APP_CONFIG.CONTACT_EMAIL }}</a>
+            e receberá um novo link de confirmação.
+          </p>
+        </template>
+
+        <!-- Fluxo normal: mensagem genérica -->
+        <template v-else>
+          <h2 class="rsvp-declined__title">Ausência Registrada</h2>
+          <p class="rsvp-declined__message">
+            Registramos que você não poderá comparecer ao casamento.
+          </p>
+          <p class="rsvp-declined__note">
+            Sentiremos sua falta! Caso mude de ideia, você pode confirmar sua presença a qualquer
+            momento.
+          </p>
+        </template>
 
         <div class="rsvp-declined__actions">
           <button
+            v-if="!viaLink"
             class="rsvp-declined__button"
             @click="reset"
           >
@@ -224,9 +280,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { APP_CONFIG } from '@shared/config/constants';
 import { useNotification } from '@shared/utils/useNotification';
+import { useWhatsApp } from '@shared/utils/useWhatsApp';
 import {
   useRsvpStore,
   qrcodeService,
@@ -242,8 +300,14 @@ import {
  * Orquestra o fluxo completo de confirmação de presença (RSVP)
  */
 
-// Store
+// Store + router
 const store = useRsvpStore();
+const route = useRoute();
+const { openWhatsApp } = useWhatsApp();
+
+// Token do link exclusivo (query param ?guest=UUID)
+const guestToken = route.query.guest as string | undefined;
+const viaLink = computed(() => !!guestToken);
 
 // Local state
 const code = ref('');
@@ -264,7 +328,7 @@ const notification = useNotification();
 
 // Computed
 const formattedWeddingDate = computed(() => {
-  const date = new Date(APP_CONFIG.WEDDING_DATE + 'T12:00:00');
+  const date = new Date(`${APP_CONFIG.WEDDING_DATE}T12:00:00`);
   return date.toLocaleDateString('pt-BR', {
     weekday: 'long',
     day: 'numeric',
@@ -273,9 +337,15 @@ const formattedWeddingDate = computed(() => {
   });
 });
 
+const confirmationUrl = computed(() => {
+  const token = store.currentGuest?.invite_token ?? guestToken;
+  if (!token) return undefined;
+  return `${window.location.origin}/confirmar-presenca?guest=${token}`;
+});
+
 // Methods
 const getFullCode = (): string => {
-  return 'RE' + code.value.trim();
+  return `RE${code.value.trim()}`;
 };
 
 const checkCode = async (): Promise<void> => {
@@ -377,6 +447,19 @@ const sendQRCodeByEmail = async (): Promise<void> => {
   }
 };
 
+const handleShareWhatsApp = (): void => {
+  const guestCode = getFullCode();
+  const url = confirmationUrl.value ?? window.location.href;
+  const message = [
+    `Minha presença no casamento de *${APP_CONFIG.BRIDE_NAME} & ${APP_CONFIG.GROOM_NAME}* foi confirmada!`,
+    `*Código:* ${guestCode}`,
+    `*Data:* ${formattedWeddingDate.value}`,
+    `QR Code para check-in:`,
+    url,
+  ].join('\n');
+  openWhatsApp(message);
+};
+
 const reset = (): void => {
   code.value = '';
   qrCodeDataUrl.value = '';
@@ -387,6 +470,20 @@ const reset = (): void => {
   showDeclineModal.value = false;
   store.resetRsvpFlow();
 };
+
+onMounted(async () => {
+  if (guestToken) {
+    try {
+      await store.checkGuestByToken(guestToken);
+      code.value = store.currentGuest?.codigo?.replace(/^RE/i, '') ?? '';
+      if (store.currentGuest?.confirmado) {
+        await generateQRCode();
+      }
+    } catch {
+      // Error handled by store
+    }
+  }
+});
 </script>
 
 <style scoped>
@@ -402,6 +499,70 @@ const reset = (): void => {
 .rsvp-container {
   width: 100%;
   max-width: 480px;
+}
+
+/* Link loading */
+.rsvp-link-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 0;
+  color: #8b7355;
+}
+
+.rsvp-link-loading__spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #e8dcc8;
+  border-top-color: #8b7355;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Link error */
+.rsvp-link-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0;
+}
+
+.rsvp-link-error__icon {
+  font-size: 3rem;
+}
+
+.rsvp-link-error__title {
+  font-size: 1.25rem;
+  color: #991b1b;
+  margin: 0;
+}
+
+.rsvp-link-error__message {
+  color: #5a4a3a;
+  margin: 0;
+  text-align: center;
+}
+
+/* Success cancel area */
+.rsvp-success__cancel-area {
+  margin-bottom: 1.5rem;
+}
+
+/* Declined email link */
+.rsvp-declined__email {
+  color: #8b3a3a;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.rsvp-declined__email:hover {
+  color: #3d2b1f;
 }
 
 /* Header */

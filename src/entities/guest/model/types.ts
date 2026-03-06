@@ -12,6 +12,8 @@ export interface Guest {
   horario_entrada?: string;
   observacoes?: string;
   invitation_delivery?: boolean; // convite entregue
+  invite_token?: string;         // UUID para link exclusivo de convite
+  recusou?: boolean;             // convidado confirmou explicitamente que não virá
   created_at?: string;
   updated_at?: string;
 }

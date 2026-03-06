@@ -11,6 +11,7 @@ export const APP_CONFIG = {
   API_TIMEOUT: 10000,
   NOTIFICATION_DURATION: 3000,
   BENEFICIARY_NAME: 'João Rodrigo Filipe da Silva',
+  CONTACT_EMAIL: 'rodrigo.elisa2026@gmail.com',
 } as const;
 
 export const API_ENDPOINTS = {

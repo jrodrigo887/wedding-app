@@ -4,7 +4,9 @@
     <div class="card">
       <!-- Header -->
       <div class="card-header">
-        <h1 class="names">{{ APP_CONFIG.BRIDE_NAME }} & {{ APP_CONFIG.GROOM_NAME }}</h1>
+        <h1 class="names">
+          {{ APP_CONFIG.BRIDE_NAME }} & {{ APP_CONFIG.GROOM_NAME }}
+        </h1>
         <p class="subtitle">{{ APP_CONFIG.APP_NAME }}</p>
         <div class="date-badge">
           <svg
@@ -36,30 +38,9 @@
           </svg>
           Confirmar Presença
         </router-link> -->
-        <router-link
-          to="/cha-de-casa-nova"
-          class="btn btn-gold"
-        >
-          <svg
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-            />
-          </svg>
-          Chá de casa nova
-        </router-link>
-
         <button
-          @click="showPixModal = true"
           class="btn btn-emerald"
+          @click="showPixModal = true"
         >
           <svg
             width="20"
@@ -80,8 +61,8 @@
 
         <button
           v-if="linkNaBioUrl"
-          @click="openLinkNaBio"
           class="btn btn-purple"
+          @click="openLinkNaBio"
         >
           <svg
             width="20"
@@ -100,7 +81,7 @@
           Presentear via Cartão
         </button>
 
-        <a
+        <!-- <a
           href="https://lista.havan.com.br/Convidado/ItensListaPresente/901773"
           target="_blank"
           rel="noopener noreferrer"
@@ -121,7 +102,7 @@
             />
           </svg>
           Lista de Presentes na Havan
-        </a>
+        </a> -->
       </div>
 
       <!-- Footer -->
@@ -223,7 +204,12 @@ const openLinkNaBio = (): void => {
 
 .divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, #d4b76a 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #d4b76a 50%,
+    transparent 100%
+  );
 }
 
 .buttons-container {

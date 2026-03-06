@@ -136,6 +136,8 @@ export class GuestRepositorySupabase {
       horario_entrada: (data.horario_entrada as string) || '',
       observacoes: data.observacoes as string,
       invitation_delivery: (data.invitation_delivery as boolean) || false,
+      invite_token: data.invite_token as string | undefined,
+      recusou: (data.recusou as boolean) || false,
       created_at: data.created_at as string,
       updated_at: data.updated_at as string,
     };
@@ -143,5 +145,17 @@ export class GuestRepositorySupabase {
 
   private mapToGuests(data: Record<string, unknown>[]): Guest[] {
     return data.map(item => this.mapToGuest(item));
+  }
+
+  async regenerateInviteToken(guestId: number): Promise<string> {
+    const newToken = crypto.randomUUID();
+    const { error } = await supabase
+      .from(this.TABLE)
+      .update({ invite_token: newToken })
+      .eq('id', guestId);
+    if (error) {
+      throw new Error(error.message);
+    }
+    return newToken;
   }
 }

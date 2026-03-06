@@ -333,6 +333,85 @@ export class RsvpRepository implements IRsvpRepository {
     }
   }
 
+  async getByToken(token: string): Promise<RsvpGuest> {
+    if (!token) throw new Error('Token não informado');
+
+    const { data, error } = await supabase
+      .from(this.TABLE)
+      .select('*')
+      .eq('invite_token', token)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        throw new Error(
+          'Link inválido ou não encontrado. Verifique com os noivos.'
+        );
+      }
+      throw new Error(error.message);
+    }
+
+    return this.mapToRsvpGuest(data);
+  }
+
+  async declinePresence(code: string): Promise<ConfirmPresenceResponse> {
+    if (!code) throw new Error('Código não informado');
+
+    const { data: guest, error: fetchError } = await supabase
+      .from(this.TABLE)
+      .select('*')
+      .ilike('codigo', code)
+      .single();
+
+    if (fetchError) {
+      if (fetchError.code === 'PGRST116') {
+        throw new Error(
+          'Código não encontrado na lista de convidados. Por favor, verifique com os noivos.'
+        );
+      }
+      throw new Error(fetchError.message);
+    }
+
+    const { error: updateError } = await supabase
+      .from(this.TABLE)
+      .update({
+        confirmado: false,
+        recusou: true,
+        data_confirmacao: new Date().toISOString(),
+      })
+      .eq('id', guest.id);
+
+    if (updateError) throw new Error(updateError.message);
+
+    const message = guest.parceiro
+      ? `Ausência registrada para ${guest.nome} e ${guest.parceiro}.`
+      : `Ausência registrada para ${guest.nome}.`;
+
+    syncToGoogleScript('declinePresence', { code: guest.codigo });
+
+    return {
+      success: true,
+      message,
+      guest: {
+        codigo: guest.codigo,
+        nome: guest.nome,
+        parceiro: guest.parceiro,
+        acompanhantes: guest.acompanhantes || 0,
+        confirmado: false,
+      },
+    };
+  }
+
+  async regenerateInviteToken(guestId: number): Promise<string> {
+    const newToken = crypto.randomUUID();
+    const { error } = await supabase
+      .from(this.TABLE)
+      .update({ invite_token: newToken })
+      .eq('id', guestId);
+    if (error) throw new Error(error.message);
+    return newToken;
+  }
+
   private mapToRsvpGuest(data: Record<string, unknown>): RsvpGuest {
     return {
       id: data.id as number,
@@ -346,6 +425,8 @@ export class RsvpRepository implements IRsvpRepository {
       data_confirmacao: data.data_confirmacao as string,
       checkin: (data.checkin as boolean) || false,
       horario_entrada: (data.horario_entrada as string) || '',
+      invite_token: data.invite_token as string | undefined,
+      recusou: (data.recusou as boolean) || false,
     };
   }
 }
@@ -492,6 +573,29 @@ export class RsvpRepositorySupabase
     );
   }
 
+  override async declinePresence(
+    code: string
+  ): Promise<ConfirmPresenceResponse> {
+    const guest = await this.getByCode(code);
+    const { error } = await supabase
+      .from('convidados')
+      .update({
+        confirmado: false,
+        recusou: true,
+        data_confirmacao: new Date().toISOString(),
+      })
+      .eq('id', guest.id);
+    if (error) throw new Error(error.message);
+    syncToGoogleScript('declinePresence', { code: guest.codigo });
+    return {
+      success: true,
+      message: guest.parceiro
+        ? `Ausência registrada para ${guest.nome} e ${guest.parceiro}.`
+        : `Ausência registrada para ${guest.nome}.`,
+      guest: { ...guest, confirmado: false },
+    };
+  }
+
   private mapToRsvpGuestPublic(data: Record<string, unknown>): RsvpGuest {
     return {
       id: data.id as number,
@@ -505,6 +609,8 @@ export class RsvpRepositorySupabase
       data_confirmacao: data.data_confirmacao as string,
       checkin: (data.checkin as boolean) || false,
       horario_entrada: (data.horario_entrada as string) || '',
+      invite_token: data.invite_token as string | undefined,
+      recusou: (data.recusou as boolean) || false,
     };
   }
 }

@@ -56,6 +56,8 @@
         <GuestsTable
           :guests="guestsStore.guests"
           :loading="guestsStore.loading"
+          :base-url="baseUrl"
+          @regenerate-token="handleRegenerateToken"
         />
       </div>
 
@@ -85,6 +87,15 @@ import { ProgressBar } from '@shared/ui';
 
 const guestsStore = useGuestsStore();
 const activeTab = ref<'overview' | 'lista' | 'checkins'>('overview');
+const baseUrl = window.location.origin;
+
+const handleRegenerateToken = async (guestId: number): Promise<void> => {
+  try {
+    await guestsStore.regenerateInviteToken(guestId);
+  } catch (err) {
+    console.error('[GuestsPage] Erro ao regenerar token:', err);
+  }
+};
 
 const handleListaTab = async () => {
   activeTab.value = 'lista';

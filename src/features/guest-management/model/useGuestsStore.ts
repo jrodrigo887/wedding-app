@@ -109,6 +109,14 @@ export const useGuestsStore = defineStore('guests', () => {
     await refresh();
   };
 
+  const regenerateInviteToken = async (guestId: number): Promise<void> => {
+    const newToken = await guestRepository.regenerateInviteToken(guestId);
+    const guest = guests.value.find(g => g.id === guestId);
+    if (guest) {
+      guest.invite_token = newToken;
+    }
+  };
+
   const reset = (): void => {
     guests.value = [];
     checkedInGuests.value = [];
@@ -137,6 +145,7 @@ export const useGuestsStore = defineStore('guests', () => {
     fetchAll,
     refresh,
     registerCheckin,
+    regenerateInviteToken,
     reset,
   };
 });

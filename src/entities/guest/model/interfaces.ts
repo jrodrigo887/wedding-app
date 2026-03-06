@@ -12,4 +12,5 @@ export interface IGuestRepository {
   getStats(): Promise<GuestStats>;
   getCheckedIn(): Promise<Guest[]>;
   registerCheckin(code: string): Promise<void>;
+  regenerateInviteToken(guestId: number): Promise<string>;
 }
