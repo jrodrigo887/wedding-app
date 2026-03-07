@@ -15,6 +15,7 @@ import {
   AdminPhotosPage,
 } from '@/pages/admin';
 import { FeatureNotAvailablePage } from '@/pages/feature-not-available';
+import { LuaMelPage } from '@/pages/lua-de-mel';
 
 // Widgets
 import { AdminLayout } from '@/widgets/admin-panel';
@@ -84,6 +85,12 @@ const routes: RouteRecordRaw[] = [
         component: AdminPhotosPage,
       },
     ],
+  },
+
+  {
+    path: '/lua-de-mel',
+    name: 'lua-de-mel',
+    component: LuaMelPage,
   },
 
   // Página de feature não disponível (mantida para compatibilidade)
