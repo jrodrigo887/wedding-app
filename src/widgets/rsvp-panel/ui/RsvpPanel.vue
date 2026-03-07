@@ -28,14 +28,22 @@
         </div>
       </RsvpCard>
 
-      <!-- Form de busca por código (apenas quando não acessado via link) -->
+      <!-- Sem token: solicitar link exclusivo -->
       <RsvpCard v-if="!viaLink && !store.currentGuest && !store.confirmed && !store.declined">
-        <CodeInput
-          v-model="code"
-          :loading="store.loading"
-          :error="store.error ?? undefined"
-          @submit="checkCode"
-        />
+        <div class="rsvp-no-token">
+          <div class="rsvp-no-token__icon">🔗</div>
+          <h2 class="rsvp-no-token__title">Link exclusivo necessário</h2>
+          <p class="rsvp-no-token__message">
+            Para confirmar sua presença, utilize o link exclusivo enviado pelos noivos.
+          </p>
+          <p class="rsvp-no-token__contact">
+            Não recebeu o link? Entre em contato pelo e-mail
+            <a
+              :href="`mailto:${APP_CONFIG.CONTACT_EMAIL}`"
+              class="rsvp-no-token__email"
+            >{{ APP_CONFIG.CONTACT_EMAIL }}</a>
+          </p>
+        </div>
       </RsvpCard>
 
       <!-- Dados do convidado encontrado -->
@@ -133,12 +141,6 @@
         <p class="rsvp-success__date">{{ formattedWeddingDate }}</p>
 
         <div class="rsvp-success__actions">
-          <button
-            class="rsvp-success__button"
-            @click="reset"
-          >
-            Nova Confirmação
-          </button>
           <router-link
             to="/"
             class="rsvp-success__link"
@@ -288,7 +290,6 @@ import { useWhatsApp } from '@shared/utils/useWhatsApp';
 import {
   useRsvpStore,
   qrcodeService,
-  CodeInput,
   GuestDetails,
   QRCodeDisplay,
   RsvpModal,
@@ -348,23 +349,14 @@ const getFullCode = (): string => {
   return `RE${code.value.trim()}`;
 };
 
-const checkCode = async (): Promise<void> => {
-  if (!code.value.trim()) return;
-
-  try {
-    await store.checkGuestCode(getFullCode());
-  } catch {
-    // Error is handled by store
-  }
-};
 
 const confirmPresence = async (): Promise<void> => {
-  if (!store.currentGuest) return;
+  if (!store.currentGuest || !guestToken) return;
 
   confirming.value = true;
 
   try {
-    await store.confirmPresence(getFullCode());
+    await store.confirmPresenceByToken(guestToken);
     await generateQRCode();
   } catch {
     // Error is handled by store
@@ -374,12 +366,12 @@ const confirmPresence = async (): Promise<void> => {
 };
 
 const cancelPresence = async (): Promise<void> => {
-  if (!store.currentGuest) return;
+  if (!store.currentGuest || !guestToken) return;
 
   cancelling.value = true;
 
   try {
-    await store.cancelPresence(getFullCode());
+    await store.cancelPresenceByToken(guestToken);
     showCancelModal.value = false;
   } catch {
     showCancelModal.value = false;
@@ -389,12 +381,12 @@ const cancelPresence = async (): Promise<void> => {
 };
 
 const declinePresence = async (): Promise<void> => {
-  if (!store.currentGuest) return;
+  if (!store.currentGuest || !guestToken) return;
 
   cancelling.value = true;
 
   try {
-    await store.declinePresence(getFullCode());
+    await store.declinePresenceByToken(guestToken);
     showDeclineModal.value = false;
   } catch {
     showDeclineModal.value = false;
@@ -447,12 +439,37 @@ const sendQRCodeByEmail = async (): Promise<void> => {
   }
 };
 
-const handleShareWhatsApp = (): void => {
-  const guestCode = getFullCode();
+const handleShareWhatsApp = async (): Promise<void> => {
+  // Tenta Web Share API com imagem (mobile — iOS/Android)
+  if (qrCodeDataUrl.value) {
+    try {
+      const res = await fetch(qrCodeDataUrl.value);
+      const blob = await res.blob();
+      const guestName = store.currentGuest?.nome ?? 'convidado';
+      const file = new File([blob], `qrcode-${guestName}.png`, { type: 'image/png' });
+
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `Presença confirmada — ${APP_CONFIG.BRIDE_NAME} & ${APP_CONFIG.GROOM_NAME}`,
+          text: [
+            `Minha presença no casamento de *${APP_CONFIG.BRIDE_NAME} & ${APP_CONFIG.GROOM_NAME}* foi confirmada!`,
+            `*Código:* ${getFullCode()}`,
+            `*Data:* ${formattedWeddingDate.value}`,
+          ].join('\n'),
+        });
+        return;
+      }
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return; // usuário cancelou
+    }
+  }
+
+  // Fallback: link via WhatsApp (desktop ou navegador sem suporte a share de arquivo)
   const url = confirmationUrl.value ?? window.location.href;
   const message = [
     `Minha presença no casamento de *${APP_CONFIG.BRIDE_NAME} & ${APP_CONFIG.GROOM_NAME}* foi confirmada!`,
-    `*Código:* ${guestCode}`,
+    `*Código:* ${getFullCode()}`,
     `*Data:* ${formattedWeddingDate.value}`,
     `QR Code para check-in:`,
     url,
@@ -547,6 +564,49 @@ onMounted(async () => {
   color: #5a4a3a;
   margin: 0;
   text-align: center;
+}
+
+/* No token — tela informativa */
+.rsvp-no-token {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.rsvp-no-token__icon {
+  font-size: 3rem;
+}
+
+.rsvp-no-token__title {
+  font-size: 1.25rem;
+  color: #3d2b1f;
+  margin: 0;
+}
+
+.rsvp-no-token__message {
+  color: #5a4a3a;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.rsvp-no-token__contact {
+  color: #8b7355;
+  font-size: 0.9rem;
+  margin: 0.25rem 0 0;
+  line-height: 1.6;
+}
+
+.rsvp-no-token__email {
+  color: #8b3a3a;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.rsvp-no-token__email:hover {
+  color: #3d2b1f;
 }
 
 /* Success cancel area */
@@ -731,21 +791,6 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-}
-
-.rsvp-success__button {
-  padding: 0.75rem 1.5rem;
-  font-size: 0.95rem;
-  color: #8b7355;
-  background: #fff9f0;
-  border: 2px solid #e8dcc8;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.rsvp-success__button:hover {
-  background: #e8dcc8;
 }
 
 .rsvp-success__link {

@@ -86,20 +86,20 @@ export class RsvpRepository implements IRsvpRepository {
       throw new Error(fetchError.message);
     }
 
-    const { error: updateError } = await supabase
+    const { data: updated, error: updateError } = await supabase
       .from(this.TABLE)
       .update({
         confirmado: true,
         data_confirmacao: new Date().toISOString(),
       })
-      .eq('id', guest.id);
+      .eq('id', guest.id)
+      .select('id')
+      .single();
 
-    if (updateError) {
-      console.error(
-        '[RsvpRepository] Erro ao confirmar presença:',
-        updateError
-      );
-      throw new Error(updateError.message);
+    if (updateError || !updated) {
+      const msg = updateError?.message ?? 'Atualização bloqueada (sem permissão no banco de dados)';
+      console.error('[RsvpRepository] Erro ao confirmar presença:', msg);
+      throw new Error(msg);
     }
 
     let message = `Presença confirmada com sucesso, ${guest.nome}!`;
@@ -142,17 +142,20 @@ export class RsvpRepository implements IRsvpRepository {
       throw new Error(fetchError.message);
     }
 
-    const { error: updateError } = await supabase
+    const { data: updated, error: updateError } = await supabase
       .from(this.TABLE)
       .update({
         confirmado: false,
         data_confirmacao: new Date().toISOString(),
       })
-      .eq('id', guest.id);
+      .eq('id', guest.id)
+      .select('id')
+      .single();
 
-    if (updateError) {
-      console.error('[RsvpRepository] Erro ao cancelar presença:', updateError);
-      throw new Error(updateError.message);
+    if (updateError || !updated) {
+      const msg = updateError?.message ?? 'Atualização bloqueada (sem permissão no banco de dados)';
+      console.error('[RsvpRepository] Erro ao cancelar presença:', msg);
+      throw new Error(msg);
     }
 
     let message = `Presença cancelada com sucesso, ${guest.nome}!`;
@@ -211,20 +214,20 @@ export class RsvpRepository implements IRsvpRepository {
       minute: '2-digit',
     });
 
-    const { error: updateError } = await supabase
+    const { data: updated, error: updateError } = await supabase
       .from(this.TABLE)
       .update({
         checkin: true,
         horario_entrada: now.toISOString(),
       })
-      .eq('id', guest.id);
+      .eq('id', guest.id)
+      .select('id')
+      .single();
 
-    if (updateError) {
-      console.error(
-        '[RsvpRepository] Erro ao registrar check-in:',
-        updateError
-      );
-      throw new Error(updateError.message);
+    if (updateError || !updated) {
+      const msg = updateError?.message ?? 'Atualização bloqueada (sem permissão no banco de dados)';
+      console.error('[RsvpRepository] Erro ao registrar check-in:', msg);
+      throw new Error(msg);
     }
 
     let message = `Check-in realizado para ${guest.nome}!`;
@@ -372,16 +375,20 @@ export class RsvpRepository implements IRsvpRepository {
       throw new Error(fetchError.message);
     }
 
-    const { error: updateError } = await supabase
+    const { data: updated, error: updateError } = await supabase
       .from(this.TABLE)
       .update({
         confirmado: false,
         recusou: true,
         data_confirmacao: new Date().toISOString(),
       })
-      .eq('id', guest.id);
+      .eq('id', guest.id)
+      .select('id')
+      .single();
 
-    if (updateError) throw new Error(updateError.message);
+    if (updateError || !updated) {
+      throw new Error(updateError?.message ?? 'Atualização bloqueada (sem permissão no banco de dados)');
+    }
 
     const message = guest.parceiro
       ? `Ausência registrada para ${guest.nome} e ${guest.parceiro}.`
@@ -402,14 +409,30 @@ export class RsvpRepository implements IRsvpRepository {
     };
   }
 
-  async regenerateInviteToken(guestId: number): Promise<string> {
-    const newToken = crypto.randomUUID();
-    const { error } = await supabase
-      .from(this.TABLE)
-      .update({ invite_token: newToken })
-      .eq('id', guestId);
+  async confirmPresenceByToken(token: string): Promise<void> {
+    if (!token) throw new Error('Token não informado');
+    const { error } = await supabase.rpc('rsvp_confirm_presence', { p_invite_token: token });
     if (error) throw new Error(error.message);
-    return newToken;
+  }
+
+  async cancelPresenceByToken(token: string): Promise<void> {
+    if (!token) throw new Error('Token não informado');
+    const { error } = await supabase.rpc('rsvp_cancel_presence', { p_invite_token: token });
+    if (error) throw new Error(error.message);
+  }
+
+  async declinePresenceByToken(token: string): Promise<void> {
+    if (!token) throw new Error('Token não informado');
+    const { error } = await supabase.rpc('rsvp_decline_presence', { p_invite_token: token });
+    if (error) throw new Error(error.message);
+  }
+
+  async regenerateInviteToken(guestId: number): Promise<string> {
+    const { data, error } = await supabase.rpc('rsvp_regenerate_invite_token', {
+      p_guest_id: guestId,
+    });
+    if (error) throw new Error(error.message);
+    return data as string;
   }
 
   private mapToRsvpGuest(data: Record<string, unknown>): RsvpGuest {
@@ -468,11 +491,13 @@ export class RsvpRepositorySupabase
     code: string
   ): Promise<ConfirmPresenceResponse> {
     const guest = await this.getByCode(code);
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('convidados')
       .update({ confirmado: true, data_confirmacao: new Date().toISOString() })
-      .eq('id', guest.id);
-    if (error) throw new Error(error.message);
+      .eq('id', guest.id)
+      .select('id')
+      .single();
+    if (error || !updated) throw new Error(error?.message ?? 'Atualização bloqueada');
     syncToGoogleScript('confirmPresence', { code: guest.codigo });
     return {
       success: true,
@@ -487,11 +512,13 @@ export class RsvpRepositorySupabase
     code: string
   ): Promise<ConfirmPresenceResponse> {
     const guest = await this.getByCode(code);
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('convidados')
       .update({ confirmado: false, data_confirmacao: new Date().toISOString() })
-      .eq('id', guest.id);
-    if (error) throw new Error(error.message);
+      .eq('id', guest.id)
+      .select('id')
+      .single();
+    if (error || !updated) throw new Error(error?.message ?? 'Atualização bloqueada');
     syncToGoogleScript('cancelPresence', { code: guest.codigo });
     return {
       success: true,
@@ -514,11 +541,13 @@ export class RsvpRepositorySupabase
       throw new Error(`Check-in já realizado${h ? ` às ${h}` : ''}`);
     }
     const now = new Date();
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('convidados')
       .update({ checkin: true, horario_entrada: now.toISOString() })
-      .eq('id', guest.id);
-    if (error) throw new Error(error.message);
+      .eq('id', guest.id)
+      .select('id')
+      .single();
+    if (error || !updated) throw new Error(error?.message ?? 'Atualização bloqueada');
     syncToGoogleScript('registerCheckin', { code: guest.codigo });
     return {
       success: true,
@@ -577,15 +606,17 @@ export class RsvpRepositorySupabase
     code: string
   ): Promise<ConfirmPresenceResponse> {
     const guest = await this.getByCode(code);
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from('convidados')
       .update({
         confirmado: false,
         recusou: true,
         data_confirmacao: new Date().toISOString(),
       })
-      .eq('id', guest.id);
-    if (error) throw new Error(error.message);
+      .eq('id', guest.id)
+      .select('id')
+      .single();
+    if (error || !updated) throw new Error(error?.message ?? 'Atualização bloqueada');
     syncToGoogleScript('declinePresence', { code: guest.codigo });
     return {
       success: true,

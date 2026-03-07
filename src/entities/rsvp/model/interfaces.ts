@@ -18,14 +18,39 @@ export interface IRsvpRepository {
   getByCode(code: string): Promise<RsvpGuest>;
 
   /**
-   * Confirma a presença de um convidado
+   * Busca um convidado pelo invite_token exclusivo
+   */
+  getByToken(token: string): Promise<RsvpGuest>;
+
+  /**
+   * Confirma a presença de um convidado (via código — admin/legado)
    */
   confirmPresence(code: string): Promise<ConfirmPresenceResponse>;
 
   /**
-   * Cancela/recusa a presença de um convidado
+   * Confirma a presença via invite_token (RPC SECURITY DEFINER)
+   */
+  confirmPresenceByToken(token: string): Promise<void>;
+
+  /**
+   * Cancela a presença de um convidado (via código — admin/legado)
    */
   cancelPresence(code: string): Promise<ConfirmPresenceResponse>;
+
+  /**
+   * Cancela a presença via invite_token (RPC SECURITY DEFINER)
+   */
+  cancelPresenceByToken(token: string): Promise<void>;
+
+  /**
+   * Recusa a presença explicitamente (via código — admin/legado)
+   */
+  declinePresence(code: string): Promise<ConfirmPresenceResponse>;
+
+  /**
+   * Recusa a presença via invite_token (RPC SECURITY DEFINER)
+   */
+  declinePresenceByToken(token: string): Promise<void>;
 
   /**
    * Registra o check-in de um convidado no evento

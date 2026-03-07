@@ -131,6 +131,59 @@ export const useRsvpStore = defineStore('rsvp', () => {
     }
   };
 
+  const confirmPresenceByToken = async (token: string): Promise<void> => {
+    loading.value = true;
+    error.value = null;
+    try {
+      await rsvpRepository.confirmPresenceByToken(token);
+      const guest = currentGuest.value!;
+      confirmationMessage.value = guest.parceiro
+        ? `Presença confirmada com sucesso, ${guest.nome} e ${guest.parceiro}!`
+        : `Presença confirmada com sucesso, ${guest.nome}!`;
+      confirmed.value = true;
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Erro ao confirmar presença. Tente novamente.';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const cancelPresenceByToken = async (token: string): Promise<void> => {
+    loading.value = true;
+    error.value = null;
+    try {
+      await rsvpRepository.cancelPresenceByToken(token);
+      if (currentGuest.value) {
+        currentGuest.value.confirmado = false;
+      }
+      confirmed.value = false;
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Erro ao cancelar presença. Tente novamente.';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const declinePresenceByToken = async (token: string): Promise<void> => {
+    loading.value = true;
+    error.value = null;
+    try {
+      await rsvpRepository.declinePresenceByToken(token);
+      if (currentGuest.value) {
+        currentGuest.value.recusou = true;
+        currentGuest.value.confirmado = false;
+      }
+      declined.value = true;
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Erro ao registrar ausência. Tente novamente.';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   const checkGuestByToken = async (token: string): Promise<void> => {
     loading.value = true;
     error.value = null;
@@ -270,8 +323,11 @@ export const useRsvpStore = defineStore('rsvp', () => {
     checkGuestCode,
     checkGuestByToken,
     confirmPresence,
+    confirmPresenceByToken,
     cancelPresence,
+    cancelPresenceByToken,
     declinePresence,
+    declinePresenceByToken,
     registerCheckin,
     fetchCheckinCount,
     fetchStats,

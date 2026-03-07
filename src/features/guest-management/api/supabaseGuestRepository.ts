@@ -148,14 +148,10 @@ export class GuestRepositorySupabase {
   }
 
   async regenerateInviteToken(guestId: number): Promise<string> {
-    const newToken = crypto.randomUUID();
-    const { error } = await supabase
-      .from(this.TABLE)
-      .update({ invite_token: newToken })
-      .eq('id', guestId);
-    if (error) {
-      throw new Error(error.message);
-    }
-    return newToken;
+    const { data, error } = await supabase.rpc('rsvp_regenerate_invite_token', {
+      p_guest_id: guestId,
+    });
+    if (error) throw new Error(error.message);
+    return data as string;
   }
 }

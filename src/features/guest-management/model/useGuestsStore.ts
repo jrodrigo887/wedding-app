@@ -114,6 +114,8 @@ export const useGuestsStore = defineStore('guests', () => {
     const guest = guests.value.find(g => g.id === guestId);
     if (guest) {
       guest.invite_token = newToken;
+      guest.recusou = false;
+      guest.confirmado = false;
     }
   };
 
