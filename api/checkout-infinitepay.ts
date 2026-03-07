@@ -4,9 +4,14 @@
 // URL: /api/checkout-infinitepay
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import type { CheckoutRequest, CheckoutResponse, ApiErrorResponse } from '../src/shared/api/contracts';
+import type {
+  CheckoutRequest,
+  CheckoutResponse,
+  ApiErrorResponse,
+} from '../src/shared/api/contracts';
 
-const INFINITYPAY_CHECKOUT_URL = 'https://api.infinitepay.io/invoices/public/checkout/links';
+const INFINITYPAY_CHECKOUT_URL =
+  'https://api.infinitepay.io/invoices/public/checkout/links';
 
 interface InfinityPayPayload {
   handle: string;
@@ -25,31 +30,39 @@ interface InfinityPayResponse {
   checkout_url?: string;
 }
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse<CheckoutResponse | ApiErrorResponse>
-) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
+  if (req.method !== 'POST')
+    return res.status(405).json({ error: 'Método não permitido' });
 
   const handle = process.env.INFINITYPAY_HANDLE;
   const redirectUrl = process.env.INFINITYPAY_REDIRECT_URL;
   const webhookUrl = process.env.INFINITYPAY_WEBHOOK_URL;
 
   if (!handle || !redirectUrl) {
-    console.error('[checkout-infinitepay] Env vars ausentes:', { handle: !!handle, redirectUrl: !!redirectUrl });
-    return res.status(500).json({ error: 'Configuração do servidor incompleta' });
+    console.error('[checkout-infinitepay] Env vars ausentes:', {
+      handle: !!handle,
+      redirectUrl: !!redirectUrl,
+    });
+    return res
+      .status(500)
+      .json({ error: 'Configuração do servidor incompleta' });
   }
 
-  const { item_id, item_title, item_price_brl } = (req.body ?? {}) as CheckoutRequest;
+  const { item_id, item_title, item_price_brl } = (req.body ??
+    {}) as CheckoutRequest;
 
   if (!item_id || !item_title || item_price_brl == null) {
-    return res.status(400).json({ error: 'Parâmetros obrigatórios: item_id, item_title, item_price_brl' });
+    return res
+      .status(400)
+      .json({
+        error: 'Parâmetros obrigatórios: item_id, item_title, item_price_brl',
+      });
   }
 
   const order_nsu = `luamel-${item_id}-${Date.now()}`;
@@ -79,7 +92,11 @@ export default async function handler(
     const responseText = await response.text();
 
     if (!response.ok) {
-      console.error('[checkout-infinitepay] InfinityPay error:', response.status, responseText);
+      console.error(
+        '[checkout-infinitepay] InfinityPay error:',
+        response.status,
+        responseText
+      );
       return res.status(502).json({
         error: 'Erro ao criar checkout na InfinityPay',
         detail: responseText,
@@ -91,8 +108,13 @@ export default async function handler(
     const checkoutUrl = data.url || data.checkout_url;
 
     if (!checkoutUrl) {
-      console.error('[checkout-infinitepay] URL não encontrada na resposta:', data);
-      return res.status(502).json({ error: 'Resposta inesperada da InfinityPay', detail: data });
+      console.error(
+        '[checkout-infinitepay] URL não encontrada na resposta:',
+        data
+      );
+      return res
+        .status(502)
+        .json({ error: 'Resposta inesperada da InfinityPay', detail: data });
     }
 
     return res.status(200).json({ checkout_url: checkoutUrl, order_nsu });

@@ -50,7 +50,7 @@ export interface InfinityPayConfig {
 }
 
 // Resposta do checkout InfinityPay
-export interface CheckoutResponse {
+export interface ApiCheckoutResponse {
   checkoutUrl: string;
   orderNsu: string;
   url?: string;
