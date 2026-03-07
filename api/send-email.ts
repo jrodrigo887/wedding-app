@@ -3,23 +3,33 @@
 // ========================================
 // URL: https://seu-projeto.vercel.app/api/send-email
 
-const nodemailer = require("nodemailer");
+import nodemailer from 'nodemailer';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { SendEmailRequest, SendEmailResponse, ApiErrorResponse } from '../src/shared/api/contracts';
 
-// Configuracoes SMTP Hostinger
-const SMTP_CONFIG = {
-  host: "smtp.hostinger.com",
+interface SmtpConfig {
+  host: string;
+  port: number;
+  secure: boolean;
+  auth: {
+    user: string;
+    pass: string;
+  };
+}
+
+const SMTP_CONFIG: SmtpConfig = {
+  host: 'smtp.hostinger.com',
   port: 465,
   secure: true,
   auth: {
-    user: process.env.SMTP_USER || "no-reply@notificacoes.rodrigoelisa.com.br",
-    pass: process.env.SMTP_PASS || "",
+    user: process.env.SMTP_USER || 'no-reply@notificacoes.rodrigoelisa.com.br',
+    pass: process.env.SMTP_PASS || '',
   },
 };
 
-const WEDDING_COUPLE = "Rodrigo e Elisa";
+const WEDDING_COUPLE = 'Rodrigo e Elisa';
 
-// Template HTML do email
-function getEmailTemplate(name, code, qrCodeUrl) {
+function getEmailTemplate(name: string, code: string, qrCodeUrl: string): string {
   return `
 <!DOCTYPE html>
 <html>
@@ -83,45 +93,41 @@ function getEmailTemplate(name, code, qrCodeUrl) {
 `;
 }
 
-// Handler Vercel Serverless
-module.exports = async function handler(req, res) {
+export default async function handler(
+  req: VercelRequest,
+  res: VercelResponse<SendEmailResponse | ApiErrorResponse>
+) {
   // CORS
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   // Preflight
-  if (req.method === "OPTIONS") {
+  if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Método não permitido" });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Método não permitido' });
   }
 
   try {
-    const { code, email, name } = req.body;
+    const { code, email, name } = req.body as SendEmailRequest;
 
     if (!code || !email || !name) {
-      return res
-        .status(400)
-        .json({ error: "Parâmetros obrigatórios: code, email, name" });
+      return res.status(400).json({ error: 'Parâmetros obrigatórios: code, email, name' });
     }
 
-    // Validar email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: "Email inválido" });
+      return res.status(400).json({ error: 'Email inválido' });
     }
 
     if (!SMTP_CONFIG.auth.pass) {
-      console.error("SMTP_PASS não configurado");
-      return res
-        .status(500)
-        .json({ error: "Serviço de email não configurado" });
+      console.error('SMTP_PASS não configurado');
+      return res.status(500).json({ error: 'Serviço de email não configurado' });
     }
 
-    // Gerar URL do QR Code
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(code)}`;
 
     const transporter = nodemailer.createTransport(SMTP_CONFIG);
@@ -134,18 +140,16 @@ module.exports = async function handler(req, res) {
       html: getEmailTemplate(name, code, qrCodeUrl),
     });
 
-    console.log("Email enviado:", info.messageId);
+    console.log('Email enviado:', info.messageId);
 
     return res.status(200).json({
       success: true,
-      message: "Email enviado com sucesso!",
+      message: 'Email enviado com sucesso!',
       messageId: info.messageId,
     });
   } catch (error) {
-    console.error("Erro ao enviar email:", error);
-    return res.status(500).json({
-      error: "Erro ao enviar email",
-      details: error.message,
-    });
+    const err = error as Error;
+    console.error('Erro ao enviar email:', err);
+    return res.status(500).json({ error: 'Erro ao enviar email', details: err.message });
   }
-};
+}

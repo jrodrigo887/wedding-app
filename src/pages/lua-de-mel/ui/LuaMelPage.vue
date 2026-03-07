@@ -134,6 +134,7 @@ import {
   type GiftItem,
 } from '@features/lua-de-mel/model/giftItems';
 import { useContribuicoesStore } from '@features/lua-de-mel/model/useContribuicoesStore';
+import type { CheckoutResponse } from '@shared/api/contracts';
 import GiftCardIllustration from './GiftCardIllustration.vue';
 
 const store = useContribuicoesStore();
@@ -204,15 +205,11 @@ async function pagarCartao(): Promise<void> {
       throw new Error(err.error || `Erro ${res.status}`);
     }
 
-    const { checkout_url, order_nsu } = await res.json();
-
-    // Persiste o NSU na sessão do browser (localStorage compartilhado entre abas).
-    // A página /obrigado vai validar que o order_nsu da URL bate com este valor
-    // antes de registrar no banco — impede registros com NSUs fabricados manualmente.
-    localStorage.setItem('pending_checkout_nsu', order_nsu);
+    const { checkout_url } = await res.json() as CheckoutResponse;
 
     // Exibe o botão de link no modal — o clique do usuário nesse <a> abre o checkout
     // sem nenhum bloqueio de popup, pois é um evento direto de interação.
+    // O registro da contribuição é feito pelo webhook /api/webhook-infinitepay.
     checkoutUrl.value = checkout_url;
   } catch (err) {
     console.error('[LuaMelPage] Erro ao criar checkout InfinityPay:', err);
