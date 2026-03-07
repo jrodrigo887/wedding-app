@@ -2,9 +2,15 @@
   <div class="page-container">
     <!-- Header -->
     <div class="page-header">
-      <router-link to="/" class="back-link">← Voltar</router-link>
+      <router-link
+        to="/"
+        class="back-link"
+        >← Voltar</router-link
+      >
       <h1 class="page-title">Fundo de Lua de Mel</h1>
-      <p class="page-subtitle">Ajuda a gente a viver nossa melhor vida por uns dias. 🌙</p>
+      <p class="page-subtitle">
+        Ajuda a gente a viver nossa melhor vida por uns dias. 🌙
+      </p>
     </div>
 
     <!-- Grid de cards -->
@@ -24,7 +30,11 @@
           <div class="card-counter">
             <span>💛</span>
             {{ store.getContagem(item.id) }}
-            {{ store.getContagem(item.id) === 1 ? 'pessoa contribuiu' : 'pessoas contribuíram' }}
+            {{
+              store.getContagem(item.id) === 1
+                ? 'pessoa contribuiu'
+                : 'pessoas contribuíram'
+            }}
           </div>
           <button class="card-btn">
             Contribuir com {{ formatPrice(item.price) }}
@@ -41,8 +51,16 @@
           class="modal-overlay"
           @click="closePaymentModal"
         >
-          <div class="modal-box" @click.stop>
-            <button class="modal-close" @click="closePaymentModal">✕</button>
+          <div
+            class="modal-box"
+            @click.stop
+          >
+            <button
+              class="modal-close"
+              @click="closePaymentModal"
+            >
+              ✕
+            </button>
 
             <div class="modal-emoji">{{ selectedItem.emoji }}</div>
             <h2 class="modal-title">{{ selectedItem.title }}</h2>
@@ -52,10 +70,18 @@
             <p class="modal-instruction">Escolha como deseja contribuir:</p>
 
             <div class="modal-buttons">
-              <button class="modal-btn modal-btn-pix" :disabled="checkoutLoading" @click="pagarPix">
+              <button
+                class="modal-btn modal-btn-pix"
+                :disabled="checkoutLoading"
+                @click="pagarPix"
+              >
                 <span>🏦</span> Pagar via PIX
               </button>
-              <button class="modal-btn modal-btn-card" :disabled="checkoutLoading" @click="pagarCartao">
+              <button
+                class="modal-btn modal-btn-card"
+                :disabled="checkoutLoading"
+                @click="pagarCartao"
+              >
                 <span v-if="checkoutLoading">⏳</span>
                 <span v-else>💳</span>
                 {{ checkoutLoading ? 'Aguarde...' : 'Pagar via Cartão' }}
@@ -63,7 +89,10 @@
             </div>
 
             <!-- Mensagem de erro no checkout -->
-            <p v-if="checkoutError" class="checkout-error">
+            <p
+              v-if="checkoutError"
+              class="checkout-error"
+            >
               {{ checkoutError }}
             </p>
           </div>
@@ -85,7 +114,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { PixModal, NotificationContainer } from '@shared/ui';
-import { GIFT_ITEMS, type GiftItem } from '@features/lua-de-mel/model/giftItems';
+import {
+  GIFT_ITEMS,
+  type GiftItem,
+} from '@features/lua-de-mel/model/giftItems';
 import { useContribuicoesStore } from '@features/lua-de-mel/model/useContribuicoesStore';
 import GiftCardIllustration from './GiftCardIllustration.vue';
 
@@ -135,16 +167,24 @@ async function pagarCartao(): Promise<void> {
   checkoutLoading.value = true;
   checkoutError.value = null;
 
+  // Abre a janela imediatamente — ainda dentro da cadeia de user gesture.
+  // Navegadores bloqueiam window.open após operações async (await), então
+  // abrimos primeiro e navegamos para a URL real quando ela chegar.
+  const popup = window.open('', '_blank', 'noopener,noreferrer');
+
   try {
-    const res = await fetch('/api/checkout-infinitepay', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        item_id: item.id,
-        item_title: `${item.emoji} ${item.title}`,
-        item_price_brl: item.price,
-      }),
-    });
+    const res = await fetch(
+      'https://rodrigoelisa-git-developer-jrodrigo887s-projects.vercel.app/api/checkout-infinitepay',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          item_id: item.id,
+          item_title: `${item.emoji} ${item.title}`,
+          item_price_brl: item.price,
+        }),
+      }
+    );
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -153,16 +193,25 @@ async function pagarCartao(): Promise<void> {
 
     const { checkout_url, order_nsu } = await res.json();
 
-    // Registra a contribuição com o order_nsu para rastreio
-    await store.registrarContribuicao(item, 'cartao', order_nsu);
+    // Navega a janela já aberta para o checkout da InfinityPay
+    if (popup && !popup.closed) {
+      popup.location.href = checkout_url;
+    } else {
+      // Fallback: tenta abrir novamente caso o popup tenha sido fechado
+      window.open(checkout_url, '_blank', 'noopener,noreferrer');
+    }
 
-    // Abre o checkout em nova aba (evita bloqueio de popup)
-    window.open(checkout_url, '_blank', 'noopener,noreferrer');
+    // O registro no banco é feito na página /obrigado após confirmação do pagamento.
+    // Aqui apenas salvamos o order_nsu localmente para referência caso necessário.
+    console.info('[LuaMelPage] Checkout aberto. order_nsu:', order_nsu);
+
     closePaymentModal();
-
   } catch (err) {
+    // Fecha a janela em branco se houve erro antes de obter a URL
+    if (popup && !popup.closed) popup.close();
     console.error('[LuaMelPage] Erro ao criar checkout InfinityPay:', err);
-    checkoutError.value = 'Não foi possível abrir o checkout. Tente via PIX ou tente novamente.';
+    checkoutError.value =
+      'Não foi possível abrir o checkout. Tente via PIX ou tente novamente.';
   } finally {
     checkoutLoading.value = false;
   }
@@ -194,7 +243,9 @@ async function pagarCartao(): Promise<void> {
   transition: opacity 0.2s;
 }
 
-.back-link:hover { opacity: 0.7; }
+.back-link:hover {
+  opacity: 0.7;
+}
 
 .page-title {
   font-family: 'Great Vibes', cursive;
@@ -221,11 +272,16 @@ async function pagarCartao(): Promise<void> {
 }
 
 @media (min-width: 640px) {
-  .gifts-grid { grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+  .gifts-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
 }
 
 @media (min-width: 960px) {
-  .gifts-grid { grid-template-columns: repeat(4, 1fr); }
+  .gifts-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .gift-card {
@@ -236,7 +292,9 @@ async function pagarCartao(): Promise<void> {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .gift-card:hover {
@@ -347,9 +405,14 @@ async function pagarCartao(): Promise<void> {
   transition: background 0.2s;
 }
 
-.modal-close:hover { background: #e5e7eb; }
+.modal-close:hover {
+  background: #e5e7eb;
+}
 
-.modal-emoji { font-size: 3.5rem; margin-bottom: 0.75rem; }
+.modal-emoji {
+  font-size: 3.5rem;
+  margin-bottom: 0.75rem;
+}
 
 .modal-title {
   font-family: 'Playfair Display', serif;
@@ -381,7 +444,10 @@ async function pagarCartao(): Promise<void> {
   margin-bottom: 1rem;
 }
 
-.modal-buttons { display: flex; gap: 0.75rem; }
+.modal-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
 
 .modal-btn {
   flex: 1;
@@ -406,12 +472,22 @@ async function pagarCartao(): Promise<void> {
   transform: none;
 }
 
-.modal-btn:not(:disabled):hover { transform: translateY(-1px); }
+.modal-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+}
 
-.modal-btn-pix { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-.modal-btn-pix:not(:disabled):hover { background: linear-gradient(135deg, #34d399 0%, #10b981 100%); }
-.modal-btn-card { background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); }
-.modal-btn-card:not(:disabled):hover { background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%); }
+.modal-btn-pix {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+.modal-btn-pix:not(:disabled):hover {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+}
+.modal-btn-card {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+}
+.modal-btn-card:not(:disabled):hover {
+  background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+}
 
 .checkout-error {
   margin-top: 0.75rem;
@@ -423,14 +499,32 @@ async function pagarCartao(): Promise<void> {
   padding: 0.5rem 0.75rem;
 }
 
-.modal-enter-active, .modal-leave-active { transition: opacity 0.25s ease; }
-.modal-enter-active .modal-box, .modal-leave-active .modal-box { transition: transform 0.25s ease; }
-.modal-enter-from, .modal-leave-to { opacity: 0; }
-.modal-enter-from .modal-box, .modal-leave-to .modal-box { transform: scale(0.9); }
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.25s ease;
+}
+.modal-enter-active .modal-box,
+.modal-leave-active .modal-box {
+  transition: transform 0.25s ease;
+}
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+.modal-enter-from .modal-box,
+.modal-leave-to .modal-box {
+  transform: scale(0.9);
+}
 
 @media (max-width: 400px) {
-  .page-title { font-size: 2.25rem; }
-  .gifts-grid { grid-template-columns: 1fr; }
-  .modal-buttons { flex-direction: column; }
+  .page-title {
+    font-size: 2.25rem;
+  }
+  .gifts-grid {
+    grid-template-columns: 1fr;
+  }
+  .modal-buttons {
+    flex-direction: column;
+  }
 }
 </style>

@@ -30,6 +30,15 @@ export const useContribuicoesStore = defineStore('contribuicoes-lua-de-mel', () 
   }
 
   async function registrarContribuicao(item: GiftItem, metodo: 'pix' | 'cartao', order_nsu?: string): Promise<void> {
+    // Idempotência: se o order_nsu já foi registrado (ex: refresh da página /obrigado), ignora
+    if (order_nsu) {
+      const jaRegistrado = await repository.existsByOrderNsu(order_nsu);
+      if (jaRegistrado) {
+        console.info('[useContribuicoesStore] Contribuição já registrada para order_nsu:', order_nsu);
+        return;
+      }
+    }
+
     // Incremento otimista imediato
     contagens.value.set(item.id, (contagens.value.get(item.id) ?? 0) + 1);
 

@@ -24,6 +24,21 @@ export class ContribuicoesRepository {
     }
   }
 
+  /** Verifica se já existe uma contribuição com o order_nsu informado (idempotência). */
+  async existsByOrderNsu(order_nsu: string): Promise<boolean> {
+    const { count, error } = await supabase
+      .from(this.TABLE)
+      .select('id', { count: 'exact', head: true })
+      .eq('order_nsu', order_nsu);
+
+    if (error) {
+      console.error('[ContribuicoesRepository] Erro ao verificar order_nsu:', error);
+      return false; // Em caso de falha, permite o insert (melhor duplicar que perder)
+    }
+
+    return (count ?? 0) > 0;
+  }
+
   async getContagensPorItem(): Promise<ContagemPorItem[]> {
     const { data, error } = await supabase
       .from(this.TABLE)

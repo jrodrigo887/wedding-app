@@ -65,11 +65,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { GIFT_ITEMS } from '@features/lua-de-mel/model/giftItems';
+import { useContribuicoesStore } from '@features/lua-de-mel/model/useContribuicoesStore';
 
 const route = useRoute();
+const store = useContribuicoesStore();
 
 const orderNsu = computed(() => (route.query.order_nsu as string) ?? '');
 const captureMethod = computed(() => (route.query.capture_method as string) ?? '');
@@ -81,6 +83,24 @@ const item = computed(() => {
   const parts = orderNsu.value.split('-');
   const itemId = parseInt(parts[1]);
   return isNaN(itemId) ? null : (GIFT_ITEMS.find(i => i.id === itemId) ?? null);
+});
+
+// Mapeia o capture_method da InfinityPay para o metodo interno
+function mapCaptureMethod(capture: string): 'pix' | 'cartao' {
+  return capture === 'pix' ? 'pix' : 'cartao';
+}
+
+// Registra a contribuição somente após o redirect da InfinityPay (pagamento confirmado).
+// O store verifica idempotência via order_nsu para evitar duplicatas em caso de refresh.
+onMounted(async () => {
+  const nsu = orderNsu.value;
+  const capture = captureMethod.value;
+  const foundItem = item.value;
+
+  // Só registra se veio de um redirect real da InfinityPay (tem order_nsu + captureMethod + item válido)
+  if (!nsu.startsWith('luamel-') || !capture || !foundItem) return;
+
+  await store.registrarContribuicao(foundItem, mapCaptureMethod(capture), nsu);
 });
 
 function formatPrice(value: number): string {
