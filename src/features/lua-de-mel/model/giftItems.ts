@@ -1,4 +1,10 @@
-export type GiftCategory = 'viagem' | 'hotel' | 'folga' | 'gastronomia' | 'relaxar' | 'memória';
+export type GiftCategory =
+  | 'viagem'
+  | 'hotel'
+  | 'folga'
+  | 'gastronomia'
+  | 'relaxar'
+  | 'memória';
 
 export interface GiftItem {
   id: number;
@@ -61,9 +67,10 @@ export const GIFT_ITEMS: GiftItem[] = [
   {
     id: 7,
     emoji: '🍹',
-    title: 'Caipirinha na beira da piscina',
-    description: 'A segunda é por conta da casa. (Não é, mas foi bonito pensar.)',
-    price: 25,
+    title: 'Coca zero na beira da piscina',
+    description:
+      'A segunda é por conta da casa. (Não é, mas foi bonito pensar.)',
+    price: 52,
     category: 'folga',
   },
   {
@@ -79,7 +86,7 @@ export const GIFT_ITEMS: GiftItem[] = [
     emoji: '☕',
     title: 'Café da manhã na cama',
     description: 'O único dia do ano que ele acorda antes das 9.',
-    price: 35,
+    price: 43,
     category: 'relaxar',
   },
   {
@@ -95,7 +102,7 @@ export const GIFT_ITEMS: GiftItem[] = [
     emoji: '🚗',
     title: 'Uber pro aeroporto às 4h',
     description: '30kg de bagagem + sem dormir = não é tão caro assim.',
-    price: 45,
+    price: 48.9,
     category: 'viagem',
   },
   {
@@ -103,7 +110,7 @@ export const GIFT_ITEMS: GiftItem[] = [
     emoji: '📱',
     title: 'Wi-Fi do hotel pra ele ver o jogo',
     description: 'Romantismo é aceitar quem a pessoa é.',
-    price: 20,
+    price: 70,
     category: 'relaxar',
   },
   {
@@ -116,10 +123,60 @@ export const GIFT_ITEMS: GiftItem[] = [
   },
   {
     id: 14,
-    emoji: '💝',
-    title: 'Qualquer coisa com amor',
-    description: 'Contribuição simbólica pra quem já deu (demais) no casamento.',
-    price: 10,
+    emoji: '💊',
+    title: '"Fundo de emergência para TPM" (cofrinho)',
+    description: 'O noivo agradece a sua contribuição.',
+    price: 100,
+    category: 'relaxar',
+  },
+  {
+    id: 15,
+    emoji: '🧾',
+    title: 'Fundo de emergência da viagem',
+    description:
+      'Pra quando a bagagem sumir, o voo atrasar, ou ele perder o passaporte.',
+    price: 100,
+    category: 'viagem',
+  },
+  {
+    id: 16,
+    emoji: '💊',
+    title: 'Kit pós-festa',
+    description:
+      'Salada de frutas, água de coco e uma boa desculpa para não sair da cama.',
+    price: 45,
+    category: 'relaxar',
+  },
+  {
+    id: 17,
+    emoji: '📖',
+    title: 'Guia fictício: Lua de mel sem brigas',
+    description: 'Spoiler: não existe. Mas pelo menos é engraçado tentar.',
+    price: 40,
+    category: 'memória',
+  },
+  {
+    id: 18,
+    emoji: '🍿',
+    title: 'Noite de cinema no quarto',
+    description: 'Netflix, minibar e total irresponsabilidade com a dieta.',
+    price: 60,
+    category: 'folga',
+  },
+  {
+    id: 19,
+    emoji: '🍿',
+    title: 'Coleção de jogos para diversão do noivo e tristeza da noiva',
+    description: 'Não contribui com isso, é sério!!!',
+    price: 55,
+    category: 'folga',
+  },
+  {
+    id: 20,
+    emoji: '🍿',
+    title: 'Teste',
+    description: 'Teste',
+    price: 5,
     category: 'folga',
   },
 ];

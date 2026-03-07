@@ -13,10 +13,28 @@
       </p>
     </div>
 
+    <!-- Filtros de ordenação -->
+    <div class="sort-controls">
+      <button
+        class="sort-btn"
+        :class="{ active: sortOrder === 'asc' }"
+        @click="sortOrder = 'asc'"
+      >
+        Menor preço
+      </button>
+      <button
+        class="sort-btn"
+        :class="{ active: sortOrder === 'desc' }"
+        @click="sortOrder = 'desc'"
+      >
+        Maior preço
+      </button>
+    </div>
+
     <!-- Grid de cards -->
     <div class="gifts-grid">
       <div
-        v-for="item in GIFT_ITEMS"
+        v-for="item in sortedItems"
         :key="item.id"
         class="gift-card"
         @click="openPaymentModal(item)"
@@ -90,17 +108,14 @@
                 {{ checkoutLoading ? 'Gerando link...' : 'Pagar via Cartão' }}
               </button>
 
-              <!-- Estado: URL pronta → link direto para o checkout (clique do usuário = sem bloqueio) -->
-              <a
+              <!-- Estado: URL pronta → abre checkout via window.open -->
+              <button
                 v-else
-                :href="checkoutUrl"
-                target="_blank"
-                rel="noopener noreferrer"
                 class="modal-btn modal-btn-card modal-btn-ready"
-                @click="closePaymentModal"
+                @click="handleCheckoutRedirect"
               >
                 💳 Ir para o pagamento →
-              </a>
+              </button>
             </div>
 
             <!-- Mensagem de erro no checkout -->
@@ -127,7 +142,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { PixModal, NotificationContainer } from '@shared/ui';
 import {
   GIFT_ITEMS,
@@ -138,6 +153,13 @@ import type { CheckoutResponse } from '@shared/api/contracts';
 import GiftCardIllustration from './GiftCardIllustration.vue';
 
 const store = useContribuicoesStore();
+
+const sortOrder = ref<'asc' | 'desc'>('asc');
+const sortedItems = computed(() =>
+  [...GIFT_ITEMS].sort((a, b) =>
+    sortOrder.value === 'asc' ? a.price - b.price : b.price - a.price
+  )
+);
 
 const selectedItem = ref<GiftItem | null>(null);
 const showPixModal = ref(false);
@@ -171,6 +193,14 @@ function pagarPix(): void {
   if (selectedItem.value) {
     store.registrarContribuicao(selectedItem.value, 'pix');
   }
+}
+
+function handleCheckoutRedirect(): void {
+  if (checkoutUrl.value) {
+    navigator.clipboard.writeText(checkoutUrl.value).catch(() => {});
+    window.open(checkoutUrl.value, '_self', 'noopener,noreferrer');
+  }
+  closePaymentModal();
 }
 
 function handlePixClose(): void {
@@ -263,6 +293,38 @@ async function pagarCartao(): Promise<void> {
   margin: 0;
 }
 
+.sort-controls {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  max-width: 960px;
+  margin-inline: auto;
+  margin-bottom: 1.25rem;
+}
+
+.sort-btn {
+  padding: 0.4rem 1rem;
+  border: 2px solid #d4b76a;
+  border-radius: 20px;
+  background: transparent;
+  color: #8b3a3a;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sort-btn:hover {
+  background: #fdf3e0;
+}
+
+.sort-btn.active {
+  background: linear-gradient(135deg, #d4b76a 0%, #c9a24a 100%);
+  border-color: #c9a24a;
+  color: white;
+}
+
 .gifts-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -312,7 +374,7 @@ async function pagarCartao(): Promise<void> {
 
 .card-title {
   font-family: 'Playfair Display', serif;
-  font-size: 0.8125rem;
+  font-size: 0.9125rem;
   font-weight: 600;
   color: #374151;
   line-height: 1.3;
