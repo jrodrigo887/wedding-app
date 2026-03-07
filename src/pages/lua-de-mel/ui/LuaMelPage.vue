@@ -187,25 +187,22 @@ async function pagarCartao(): Promise<void> {
   checkoutUrl.value = null;
 
   try {
-    const res = await fetch(
-      'https://rodrigoelisa-git-developer-jrodrigo887s-projects.vercel.app/api/checkout-infinitepay',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          item_id: item.id,
-          item_title: `${item.emoji} ${item.title}`,
-          item_price_brl: item.price,
-        }),
-      }
-    );
+    const res = await fetch('/api/checkout-infinitepay', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        item_id: item.id,
+        item_title: `${item.emoji} ${item.title}`,
+        item_price_brl: item.price,
+      }),
+    });
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || `Erro ${res.status}`);
     }
 
-    const { checkout_url } = await res.json() as CheckoutResponse;
+    const { checkout_url } = (await res.json()) as CheckoutResponse;
 
     // Exibe o botão de link no modal — o clique do usuário nesse <a> abre o checkout
     // sem nenhum bloqueio de popup, pois é um evento direto de interação.
@@ -501,8 +498,13 @@ async function pagarCartao(): Promise<void> {
   animation: none;
 }
 @keyframes pulse-gold {
-  0%, 100% { box-shadow: 0 4px 14px rgba(196, 160, 60, 0.4); }
-  50%       { box-shadow: 0 4px 22px rgba(196, 160, 60, 0.7); }
+  0%,
+  100% {
+    box-shadow: 0 4px 14px rgba(196, 160, 60, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 22px rgba(196, 160, 60, 0.7);
+  }
 }
 
 .checkout-error {
