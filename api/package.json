@@ -2,13 +2,14 @@
   "name": "wedding-email-api",
   "version": "1.0.0",
   "description": "API de envio de emails para lista de casamento",
-  "main": "send-email.js",
-  "scripts": {
-    "start": "node send-email.js",
-    "dev": "node send-email.js"
-  },
+  "scripts": {},
   "dependencies": {
     "nodemailer": "^6.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/nodemailer": "^6.4.0",
+    "@vercel/node": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
