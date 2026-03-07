@@ -91,14 +91,26 @@ function mapCaptureMethod(capture: string): 'pix' | 'cartao' {
 }
 
 // Registra a contribuição somente após o redirect da InfinityPay (pagamento confirmado).
-// O store verifica idempotência via order_nsu para evitar duplicatas em caso de refresh.
+// Valida o NSU contra a sessão do browser para impedir registros com NSUs fabricados.
+// O store também verifica idempotência via DB (guard duplo contra refresh da página).
 onMounted(async () => {
   const nsu = orderNsu.value;
   const capture = captureMethod.value;
   const foundItem = item.value;
 
-  // Só registra se veio de um redirect real da InfinityPay (tem order_nsu + captureMethod + item válido)
+  // Precisa de order_nsu + captureMethod + item reconhecido
   if (!nsu.startsWith('luamel-') || !capture || !foundItem) return;
+
+  // Valida que o NSU foi gerado por este browser (sessão de pagamento iniciada aqui)
+  const pendingNsu = localStorage.getItem('pending_checkout_nsu');
+  if (pendingNsu !== nsu) {
+    console.warn('[ObrigadoPage] NSU não corresponde à sessão de pagamento. Registro ignorado.');
+    return;
+  }
+
+  // Remove da sessão antes de registrar — se a página for recarregada,
+  // o guard do store (existsByOrderNsu) garante que não haverá duplicata no DB.
+  localStorage.removeItem('pending_checkout_nsu');
 
   await store.registrarContribuicao(foundItem, mapCaptureMethod(capture), nsu);
 });

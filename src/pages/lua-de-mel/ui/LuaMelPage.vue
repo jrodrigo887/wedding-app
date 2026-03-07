@@ -77,15 +77,30 @@
               >
                 <span>🏦</span> Pagar via PIX
               </button>
+
+              <!-- Estado: URL ainda não gerada → botão para buscar -->
               <button
+                v-if="!checkoutUrl"
                 class="modal-btn modal-btn-card"
                 :disabled="checkoutLoading"
                 @click="pagarCartao"
               >
                 <span v-if="checkoutLoading">⏳</span>
                 <span v-else>💳</span>
-                {{ checkoutLoading ? 'Aguarde...' : 'Pagar via Cartão' }}
+                {{ checkoutLoading ? 'Gerando link...' : 'Pagar via Cartão' }}
               </button>
+
+              <!-- Estado: URL pronta → link direto para o checkout (clique do usuário = sem bloqueio) -->
+              <a
+                v-else
+                :href="checkoutUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="modal-btn modal-btn-card modal-btn-ready"
+                @click="closePaymentModal"
+              >
+                💳 Ir para o pagamento →
+              </a>
             </div>
 
             <!-- Mensagem de erro no checkout -->
@@ -127,6 +142,7 @@ const selectedItem = ref<GiftItem | null>(null);
 const showPixModal = ref(false);
 const checkoutLoading = ref(false);
 const checkoutError = ref<string | null>(null);
+const checkoutUrl = ref<string | null>(null);
 
 onMounted(() => {
   store.loadContagens();
@@ -146,6 +162,7 @@ function closePaymentModal(): void {
   selectedItem.value = null;
   showPixModal.value = false;
   checkoutError.value = null;
+  checkoutUrl.value = null;
 }
 
 function pagarPix(): void {
@@ -166,11 +183,7 @@ async function pagarCartao(): Promise<void> {
 
   checkoutLoading.value = true;
   checkoutError.value = null;
-
-  // Abre a janela imediatamente — ainda dentro da cadeia de user gesture.
-  // Navegadores bloqueiam window.open após operações async (await), então
-  // abrimos primeiro e navegamos para a URL real quando ela chegar.
-  const popup = window.open('', '_blank', 'noopener,noreferrer');
+  checkoutUrl.value = null;
 
   try {
     const res = await fetch(
@@ -193,22 +206,15 @@ async function pagarCartao(): Promise<void> {
 
     const { checkout_url, order_nsu } = await res.json();
 
-    // Navega a janela já aberta para o checkout da InfinityPay
-    if (popup && !popup.closed) {
-      popup.location.href = checkout_url;
-    } else {
-      // Fallback: tenta abrir novamente caso o popup tenha sido fechado
-      window.open(checkout_url, '_blank', 'noopener,noreferrer');
-    }
+    // Persiste o NSU na sessão do browser (localStorage compartilhado entre abas).
+    // A página /obrigado vai validar que o order_nsu da URL bate com este valor
+    // antes de registrar no banco — impede registros com NSUs fabricados manualmente.
+    localStorage.setItem('pending_checkout_nsu', order_nsu);
 
-    // O registro no banco é feito na página /obrigado após confirmação do pagamento.
-    // Aqui apenas salvamos o order_nsu localmente para referência caso necessário.
-    console.info('[LuaMelPage] Checkout aberto. order_nsu:', order_nsu);
-
-    closePaymentModal();
+    // Exibe o botão de link no modal — o clique do usuário nesse <a> abre o checkout
+    // sem nenhum bloqueio de popup, pois é um evento direto de interação.
+    checkoutUrl.value = checkout_url;
   } catch (err) {
-    // Fecha a janela em branco se houve erro antes de obter a URL
-    if (popup && !popup.closed) popup.close();
     console.error('[LuaMelPage] Erro ao criar checkout InfinityPay:', err);
     checkoutError.value =
       'Não foi possível abrir o checkout. Tente via PIX ou tente novamente.';
@@ -484,9 +490,22 @@ async function pagarCartao(): Promise<void> {
 }
 .modal-btn-card {
   background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  text-decoration: none;
 }
 .modal-btn-card:not(:disabled):hover {
   background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+}
+.modal-btn-ready {
+  background: linear-gradient(135deg, #d4b76a 0%, #c9a24a 100%);
+  animation: pulse-gold 1.5s ease-in-out infinite;
+}
+.modal-btn-ready:hover {
+  background: linear-gradient(135deg, #e0c57a 0%, #d4b76a 100%);
+  animation: none;
+}
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 4px 14px rgba(196, 160, 60, 0.4); }
+  50%       { box-shadow: 0 4px 22px rgba(196, 160, 60, 0.7); }
 }
 
 .checkout-error {
