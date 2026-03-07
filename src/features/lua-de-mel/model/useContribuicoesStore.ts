@@ -29,7 +29,7 @@ export const useContribuicoesStore = defineStore('contribuicoes-lua-de-mel', () 
     }
   }
 
-  async function registrarContribuicao(item: GiftItem, metodo: 'pix' | 'cartao'): Promise<void> {
+  async function registrarContribuicao(item: GiftItem, metodo: 'pix' | 'cartao', order_nsu?: string): Promise<void> {
     // Incremento otimista imediato
     contagens.value.set(item.id, (contagens.value.get(item.id) ?? 0) + 1);
 
@@ -39,6 +39,7 @@ export const useContribuicoesStore = defineStore('contribuicoes-lua-de-mel', () 
         item_title: item.title,
         item_price: item.price,
         metodo,
+        order_nsu,
       });
     } catch (err) {
       // Reverter incremento se falhar

@@ -15,10 +15,8 @@
         class="gift-card"
         @click="openPaymentModal(item)"
       >
-        <!-- Ilustração única por item -->
         <GiftCardIllustration :item="item" />
 
-        <!-- Conteúdo do card -->
         <div class="card-body">
           <h3 class="card-title">{{ item.title }}</h3>
           <p class="card-description">{{ item.description }}</p>
@@ -54,19 +52,26 @@
             <p class="modal-instruction">Escolha como deseja contribuir:</p>
 
             <div class="modal-buttons">
-              <button class="modal-btn modal-btn-pix" @click="pagarPix">
+              <button class="modal-btn modal-btn-pix" :disabled="checkoutLoading" @click="pagarPix">
                 <span>🏦</span> Pagar via PIX
               </button>
-              <button class="modal-btn modal-btn-card" @click="pagarCartao">
-                <span>💳</span> Pagar via Cartão
+              <button class="modal-btn modal-btn-card" :disabled="checkoutLoading" @click="pagarCartao">
+                <span v-if="checkoutLoading">⏳</span>
+                <span v-else>💳</span>
+                {{ checkoutLoading ? 'Aguarde...' : 'Pagar via Cartão' }}
               </button>
             </div>
+
+            <!-- Mensagem de erro no checkout -->
+            <p v-if="checkoutError" class="checkout-error">
+              {{ checkoutError }}
+            </p>
           </div>
         </div>
       </Transition>
     </Teleport>
 
-    <!-- PIX Modal com QR code dinâmico -->
+    <!-- PIX Modal com QR code dinâmico e valor pré-definido -->
     <PixModal
       :is-open="showPixModal"
       :suggested-amount="selectedItem?.price"
@@ -88,6 +93,8 @@ const store = useContribuicoesStore();
 
 const selectedItem = ref<GiftItem | null>(null);
 const showPixModal = ref(false);
+const checkoutLoading = ref(false);
+const checkoutError = ref<string | null>(null);
 
 onMounted(() => {
   store.loadContagens();
@@ -99,11 +106,14 @@ function formatPrice(value: number): string {
 
 function openPaymentModal(item: GiftItem): void {
   selectedItem.value = item;
+  checkoutError.value = null;
 }
 
 function closePaymentModal(): void {
+  if (checkoutLoading.value) return;
   selectedItem.value = null;
   showPixModal.value = false;
+  checkoutError.value = null;
 }
 
 function pagarPix(): void {
@@ -118,23 +128,44 @@ function handlePixClose(): void {
   closePaymentModal();
 }
 
-function pagarCartao(): void {
+async function pagarCartao(): Promise<void> {
   const item = selectedItem.value;
-  if (!item) return;
+  if (!item || checkoutLoading.value) return;
 
-  store.registrarContribuicao(item, 'cartao');
+  checkoutLoading.value = true;
+  checkoutError.value = null;
 
-  const baseUrl = import.meta.env.VITE_INFINITYPAY_LINK_NA_BIO || '';
-  const separator = baseUrl.includes('?') ? '&' : '?';
-  const url = `${baseUrl}${separator}amount=${item.price.toFixed(2)}`;
+  try {
+    const res = await fetch('/api/checkout-infinitepay', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        item_id: item.id,
+        item_title: `${item.emoji} ${item.title}`,
+        item_price_brl: item.price,
+      }),
+    });
 
-  const width = 450;
-  const height = 700;
-  const left = Math.round((window.screen.width - width) / 2);
-  const top = Math.round((window.screen.height - height) / 2);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Erro ${res.status}`);
+    }
 
-  window.open(url, 'InfinityPay', `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes`);
-  closePaymentModal();
+    const { checkout_url, order_nsu } = await res.json();
+
+    // Registra a contribuição com o order_nsu para rastreio
+    await store.registrarContribuicao(item, 'cartao', order_nsu);
+
+    // Abre o checkout em nova aba (evita bloqueio de popup)
+    window.open(checkout_url, '_blank', 'noopener,noreferrer');
+    closePaymentModal();
+
+  } catch (err) {
+    console.error('[LuaMelPage] Erro ao criar checkout InfinityPay:', err);
+    checkoutError.value = 'Não foi possível abrir o checkout. Tente via PIX ou tente novamente.';
+  } finally {
+    checkoutLoading.value = false;
+  }
 }
 </script>
 
@@ -181,7 +212,6 @@ function pagarCartao(): void {
   margin: 0;
 }
 
-/* Grid */
 .gifts-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -198,7 +228,6 @@ function pagarCartao(): void {
   .gifts-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
-/* Card */
 .gift-card {
   background: white;
   border-radius: 16px;
@@ -276,7 +305,7 @@ function pagarCartao(): void {
   transform: translateY(-1px);
 }
 
-/* Modal overlay */
+/* Modal */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -371,14 +400,29 @@ function pagarCartao(): void {
   transition: all 0.2s ease;
 }
 
-.modal-btn:hover { transform: translateY(-1px); }
+.modal-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.modal-btn:not(:disabled):hover { transform: translateY(-1px); }
 
 .modal-btn-pix { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-.modal-btn-pix:hover { background: linear-gradient(135deg, #34d399 0%, #10b981 100%); }
+.modal-btn-pix:not(:disabled):hover { background: linear-gradient(135deg, #34d399 0%, #10b981 100%); }
 .modal-btn-card { background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); }
-.modal-btn-card:hover { background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%); }
+.modal-btn-card:not(:disabled):hover { background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%); }
 
-/* Transitions */
+.checkout-error {
+  margin-top: 0.75rem;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.75rem;
+  color: #ef4444;
+  background: #fef2f2;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+}
+
 .modal-enter-active, .modal-leave-active { transition: opacity 0.25s ease; }
 .modal-enter-active .modal-box, .modal-leave-active .modal-box { transition: transform 0.25s ease; }
 .modal-enter-from, .modal-leave-to { opacity: 0; }

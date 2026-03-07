@@ -5,6 +5,7 @@ export interface ContribuicaoInsert {
   item_title: string;
   item_price: number;
   metodo: 'pix' | 'cartao';
+  order_nsu?: string;
 }
 
 export interface ContagemPorItem {
