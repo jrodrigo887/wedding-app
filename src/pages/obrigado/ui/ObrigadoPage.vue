@@ -34,9 +34,20 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+
 // Página puramente visual — sem lógica de negócio.
 // O registro da contribuição é feito pelo webhook /api/webhook-infinitepay
 // após confirmação de pagamento pela InfinityPay.
+
+const router = useRouter();
+
+onMounted(() => {
+  if (window.location.search) {
+    router.replace({ path: '/obrigado', query: {} });
+  }
+});
 </script>
 
 <style scoped>

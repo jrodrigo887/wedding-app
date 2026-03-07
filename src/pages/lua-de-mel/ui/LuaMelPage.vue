@@ -149,10 +149,12 @@ import {
   type GiftItem,
 } from '@features/lua-de-mel/model/giftItems';
 import { useContribuicoesStore } from '@features/lua-de-mel/model/useContribuicoesStore';
+import { useNotification } from '@shared/utils';
 import type { CheckoutResponse } from '@shared/api/contracts';
 import GiftCardIllustration from './GiftCardIllustration.vue';
 
 const store = useContribuicoesStore();
+const { success } = useNotification();
 
 const sortOrder = ref<'asc' | 'desc'>('asc');
 const sortedItems = computed(() =>
@@ -198,7 +200,8 @@ function pagarPix(): void {
 function handleCheckoutRedirect(): void {
   if (checkoutUrl.value) {
     navigator.clipboard.writeText(checkoutUrl.value).catch(() => {});
-    window.open(checkoutUrl.value, '_self', 'noopener,noreferrer');
+    success('Link copiado! Abrindo o pagamento...');
+    window.open(checkoutUrl.value, '_self');
   }
   closePaymentModal();
 }
