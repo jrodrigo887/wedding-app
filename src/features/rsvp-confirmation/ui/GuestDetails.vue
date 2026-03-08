@@ -30,10 +30,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import type { RsvpGuest } from '@/entities/guest';
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     guest: RsvpGuest;
     icon?: string;
@@ -43,10 +42,10 @@ const props = withDefaults(
   }
 );
 
-const totalPeople = computed(() => {
-  const hasParceiro = props.guest.parceiro ? 1 : 0;
-  return 1 + hasParceiro + (Number(props.guest.acompanhantes) || 0);
-});
+// const totalPeople = computed(() => {
+//   const hasParceiro = props.guest.parceiro ? 1 : 0;
+//   return 1 + hasParceiro + (Number(props.guest.acompanhantes) || 0);
+// });
 </script>
 
 <style scoped>
