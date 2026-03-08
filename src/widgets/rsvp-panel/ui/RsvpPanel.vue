@@ -19,35 +19,55 @@
       </RsvpCard>
 
       <!-- Link inválido -->
-      <RsvpCard v-if="viaLink && store.error && !store.currentGuest && !store.confirmed && !store.declined">
+      <RsvpCard
+        v-if="
+          viaLink &&
+          store.error &&
+          !store.currentGuest &&
+          !store.confirmed &&
+          !store.declined
+        "
+      >
         <div class="rsvp-link-error">
           <div class="rsvp-link-error__icon">❌</div>
           <h2 class="rsvp-link-error__title">Link inválido</h2>
           <p class="rsvp-link-error__message">{{ store.error }}</p>
-          <router-link to="/" class="rsvp-declined__link">Ver Lista de Presentes →</router-link>
+          <router-link
+            to="/"
+            class="rsvp-declined__link"
+            >Ver Lista de Presentes →</router-link
+          >
         </div>
       </RsvpCard>
 
       <!-- Sem token: solicitar link exclusivo -->
-      <RsvpCard v-if="!viaLink && !store.currentGuest && !store.confirmed && !store.declined">
+      <RsvpCard
+        v-if="
+          !viaLink && !store.currentGuest && !store.confirmed && !store.declined
+        "
+      >
         <div class="rsvp-no-token">
           <div class="rsvp-no-token__icon">🔗</div>
           <h2 class="rsvp-no-token__title">Link exclusivo necessário</h2>
           <p class="rsvp-no-token__message">
-            Para confirmar sua presença, utilize o link exclusivo enviado pelos noivos.
+            Para confirmar sua presença, utilize o link exclusivo enviado pelos
+            noivos.
           </p>
           <p class="rsvp-no-token__contact">
             Não recebeu o link? Entre em contato pelo e-mail
             <a
               :href="`mailto:${APP_CONFIG.CONTACT_EMAIL}`"
               class="rsvp-no-token__email"
-            >{{ APP_CONFIG.CONTACT_EMAIL }}</a>
+              >{{ APP_CONFIG.CONTACT_EMAIL }}</a
+            >
           </p>
         </div>
       </RsvpCard>
 
       <!-- Dados do convidado encontrado -->
-      <RsvpCard v-if="store.currentGuest && !store.confirmed && !store.declined">
+      <RsvpCard
+        v-if="store.currentGuest && !store.confirmed && !store.declined"
+      >
         <GuestDetails :guest="store.currentGuest">
           <!-- Já confirmado -->
           <div
@@ -69,7 +89,9 @@
             v-else
             class="rsvp-actions"
           >
-            <p class="rsvp-actions__text">Deseja confirmar sua presença no casamento?</p>
+            <p class="rsvp-actions__text">
+              Deseja confirmar sua presença no casamento?
+            </p>
             <div class="rsvp-actions__buttons">
               <button
                 class="rsvp-actions__confirm-button"
@@ -128,7 +150,10 @@
         />
 
         <!-- Cancelar quando acessado via link e já estava confirmado -->
-        <div v-if="viaLink" class="rsvp-success__cancel-area">
+        <div
+          v-if="viaLink"
+          class="rsvp-success__cancel-area"
+        >
           <button
             class="rsvp-already-confirmed__cancel-link"
             @click="showCancelModal = true"
@@ -142,7 +167,7 @@
 
         <div class="rsvp-success__actions">
           <router-link
-            to="/"
+            to="/lua-de-mel"
             class="rsvp-success__link"
           >
             Ver Lista de Presentes →
@@ -157,10 +182,12 @@
         icon="⚠️"
         @close="showCancelModal = false"
       >
-        <template #message> Tem certeza que deseja cancelar sua presença no casamento? </template>
+        <template #message>
+          Tem certeza que deseja cancelar sua presença no casamento?
+        </template>
         <template #warning>
-          Esta ação irá remover sua confirmação e você precisará confirmar novamente caso mude de
-          ideia.
+          Esta ação irá remover sua confirmação e você precisará confirmar
+          novamente caso mude de ideia.
         </template>
         <template #actions>
           <button
@@ -192,8 +219,8 @@
           Que pena que você não poderá estar presente no nosso casamento!
         </template>
         <template #info>
-          Ao confirmar, registraremos que você não poderá comparecer. Caso mude de ideia, você pode
-          confirmar sua presença a qualquer momento.
+          Ao confirmar, registraremos que você não poderá comparecer. Caso mude
+          de ideia, você pode confirmar sua presença a qualquer momento.
         </template>
         <template #actions>
           <button
@@ -234,7 +261,8 @@
             <a
               :href="`mailto:${APP_CONFIG.CONTACT_EMAIL}`"
               class="rsvp-declined__email"
-            >{{ APP_CONFIG.CONTACT_EMAIL }}</a>
+              >{{ APP_CONFIG.CONTACT_EMAIL }}</a
+            >
             e receberá um novo link de confirmação.
           </p>
         </template>
@@ -246,8 +274,8 @@
             Registramos que você não poderá comparecer ao casamento.
           </p>
           <p class="rsvp-declined__note">
-            Sentiremos sua falta! Caso mude de ideia, você pode confirmar sua presença a qualquer
-            momento.
+            Sentiremos sua falta! Caso mude de ideia, você pode confirmar sua
+            presença a qualquer momento.
           </p>
         </template>
 
@@ -355,7 +383,6 @@ const getFullCode = (): string => {
   return `RE${code.value.trim()}`;
 };
 
-
 const confirmPresence = async (): Promise<void> => {
   if (!store.currentGuest || !guestToken) return;
 
@@ -405,7 +432,8 @@ const declinePresence = async (): Promise<void> => {
 const generateQRCode = async (): Promise<void> => {
   qrCodeLoading.value = true;
   try {
-    qrCodeDataUrl.value = await qrcodeService.generateWeddingQRCode(getFullCode());
+    qrCodeDataUrl.value =
+      await qrcodeService.generateWeddingQRCode(getFullCode());
   } catch (err) {
     console.error('Erro ao gerar QR Code:', err);
   } finally {
@@ -416,7 +444,10 @@ const generateQRCode = async (): Promise<void> => {
 const downloadQRCode = (): void => {
   if (qrCodeDataUrl.value) {
     const guestName = store.currentGuest?.nome || 'convidado';
-    qrcodeService.downloadQRCode(qrCodeDataUrl.value, `qrcode-${guestName}.png`);
+    qrcodeService.downloadQRCode(
+      qrCodeDataUrl.value,
+      `qrcode-${guestName}.png`
+    );
   }
 };
 
@@ -438,7 +469,8 @@ const sendQRCodeByEmail = async (): Promise<void> => {
     emailSent.value = true;
     notification.success('E-mail enviado com sucesso.', 3000);
   } catch (err) {
-    emailError.value = err instanceof Error ? err.message : 'Erro ao enviar email';
+    emailError.value =
+      err instanceof Error ? err.message : 'Erro ao enviar email';
     notification.error('Erro ao enviar e-mail.', 3000);
   } finally {
     emailSending.value = false;
@@ -452,7 +484,9 @@ const handleShareWhatsApp = async (): Promise<void> => {
       const res = await fetch(qrCodeDataUrl.value);
       const blob = await res.blob();
       const guestName = store.currentGuest?.nome ?? 'convidado';
-      const file = new File([blob], `qrcode-${guestName}.png`, { type: 'image/png' });
+      const file = new File([blob], `qrcode-${guestName}.png`, {
+        type: 'image/png',
+      });
 
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({
@@ -544,7 +578,9 @@ onMounted(async () => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Link error */
