@@ -7,7 +7,7 @@
 
     <div class="guest-details__info">
       <div class="guest-details__item">
-        <span class="guest-details__label">Código:</span>
+        <span class="guest-details__label">Senha:</span>
         <span class="guest-details__value">{{ guest.codigo }}</span>
       </div>
 
