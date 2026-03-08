@@ -11,7 +11,7 @@
         <span class="guest-details__value">{{ guest.codigo }}</span>
       </div>
 
-      <div
+      <!-- <div
         v-if="guest.acompanhantes > 0"
         class="guest-details__item"
       >
@@ -22,7 +22,7 @@
       <div class="guest-details__item">
         <span class="guest-details__label">Total de pessoas:</span>
         <span class="guest-details__value">{{ totalPeople }}</span>
-      </div>
+      </div> -->
     </div>
 
     <slot></slot>
