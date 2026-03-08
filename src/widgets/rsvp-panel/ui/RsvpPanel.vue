@@ -339,7 +339,13 @@ const formattedWeddingDate = computed(() => {
 });
 
 const confirmationUrl = computed(() => {
-  const token = store.currentGuest?.invite_token ?? guestToken;
+  const guest = store.currentGuest;
+  // Prefere link curto (/convite/<short_code>) se disponível
+  if (guest?.short_code) {
+    return `${window.location.origin}/convite/${guest.short_code}`;
+  }
+  // Fallback: link longo com UUID (para convidados sem short_code ainda)
+  const token = guest?.invite_token ?? guestToken;
   if (!token) return undefined;
   return `${window.location.origin}/confirmar-presenca?guest=${token}`;
 });

@@ -445,6 +445,7 @@ export class RsvpRepository implements IRsvpRepository {
       checkin: (data.checkin as boolean) || false,
       horario_entrada: (data.horario_entrada as string) || '',
       invite_token: data.invite_token as string | undefined,
+      short_code: data.short_code as string | undefined,
       recusou: (data.recusou as boolean) || false,
     };
   }
@@ -632,6 +633,7 @@ export class RsvpRepositorySupabase
       checkin: (data.checkin as boolean) || false,
       horario_entrada: (data.horario_entrada as string) || '',
       invite_token: data.invite_token as string | undefined,
+      short_code: data.short_code as string | undefined,
       recusou: (data.recusou as boolean) || false,
     };
   }

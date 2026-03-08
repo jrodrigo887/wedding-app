@@ -137,6 +137,7 @@ export class GuestRepositorySupabase {
       observacoes: data.observacoes as string,
       invitation_delivery: (data.invitation_delivery as boolean) || false,
       invite_token: data.invite_token as string | undefined,
+      short_code: data.short_code as string | undefined,
       recusou: (data.recusou as boolean) || false,
       created_at: data.created_at as string,
       updated_at: data.updated_at as string,

@@ -71,7 +71,8 @@ RETURNS TABLE(
   checkin      BOOLEAN,
   horario_entrada TIMESTAMPTZ,
   recusou      BOOLEAN,
-  invite_token UUID
+  invite_token UUID,
+  short_code   VARCHAR
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -88,7 +89,8 @@ BEGIN
       c.checkin,
       c.horario_entrada,
       c.recusou,
-      c.invite_token
+      c.invite_token,
+      c.short_code
     FROM convidados c
     WHERE c.invite_token = p_invite_token
     LIMIT 1;
