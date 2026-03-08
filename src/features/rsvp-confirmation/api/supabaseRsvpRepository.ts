@@ -48,22 +48,21 @@ export class RsvpRepository implements IRsvpRepository {
     }
 
     const { data, error } = await supabase
-      .from(this.TABLE)
-      .select('*')
-      .ilike('codigo', code)
-      .single();
+      .rpc('get_guest_by_code', { p_codigo: code });
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        throw new Error(
-          'Código não encontrado na lista de convidados. Por favor, verifique com os noivos.'
-        );
-      }
       console.error('[RsvpRepository] Erro ao verificar convidado:', error);
       throw new Error(error.message);
     }
 
-    return this.mapToRsvpGuest(data);
+    const guest = Array.isArray(data) ? data[0] : data;
+    if (!guest) {
+      throw new Error(
+        'Código não encontrado na lista de convidados. Por favor, verifique com os noivos.'
+      );
+    }
+
+    return this.mapToRsvpGuest(guest);
   }
 
   async confirmPresence(code: string): Promise<ConfirmPresenceResponse> {
@@ -340,21 +339,18 @@ export class RsvpRepository implements IRsvpRepository {
     if (!token) throw new Error('Token não informado');
 
     const { data, error } = await supabase
-      .from(this.TABLE)
-      .select('*')
-      .eq('invite_token', token)
-      .single();
+      .rpc('get_guest_by_token', { p_invite_token: token });
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        throw new Error(
-          'Link inválido ou não encontrado. Verifique com os noivos.'
-        );
-      }
       throw new Error(error.message);
     }
 
-    return this.mapToRsvpGuest(data);
+    const guest = Array.isArray(data) ? data[0] : data;
+    if (!guest) {
+      throw new Error('Link inválido ou não encontrado. Verifique com os noivos.');
+    }
+
+    return this.mapToRsvpGuest(guest);
   }
 
   async declinePresence(code: string): Promise<ConfirmPresenceResponse> {
@@ -471,20 +467,15 @@ export class RsvpRepositorySupabase
   override async getByCode(code: string): Promise<RsvpGuest> {
     if (!code) throw new Error('Código não informado');
     const { data, error } = await supabase
-      .from('convidados')
-      .select('*')
-      .ilike('codigo', code)
-
-      .single();
-    if (error) {
-      if (error.code === 'PGRST116') {
-        throw new Error(
-          'Código não encontrado na lista de convidados. Por favor, verifique com os noivos.'
-        );
-      }
-      throw new Error(error.message);
+      .rpc('get_guest_by_code', { p_codigo: code });
+    if (error) throw new Error(error.message);
+    const guest = Array.isArray(data) ? data[0] : data;
+    if (!guest) {
+      throw new Error(
+        'Código não encontrado na lista de convidados. Por favor, verifique com os noivos.'
+      );
     }
-    return this.mapToRsvpGuestPublic(data);
+    return this.mapToRsvpGuestPublic(guest);
   }
 
   override async confirmPresence(

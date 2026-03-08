@@ -154,6 +154,10 @@ const copiedId = ref<number | null>(null);
 
 const getInviteLink = (guest: Guest): string => {
   const base = props.baseUrl ?? window.location.origin;
+  if (guest.short_code) {
+    return `${base}/convite/${guest.short_code}`;
+  }
+  // Fallback para convidados sem short_code ainda
   return `${base}/confirmar-presenca?guest=${guest.invite_token}`;
 };
 

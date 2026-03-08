@@ -13,6 +13,7 @@ export interface Guest {
   observacoes?: string;
   invitation_delivery?: boolean; // convite entregue
   invite_token?: string;         // UUID para link exclusivo de convite
+  short_code?: string;           // código curto aleatório para URL /convite/:short_code
   recusou?: boolean;             // convidado confirmou explicitamente que não virá
   created_at?: string;
   updated_at?: string;

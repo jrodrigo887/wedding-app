@@ -5,6 +5,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/convite/:code",
+      "destination": "/api/convite?code=:code"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
