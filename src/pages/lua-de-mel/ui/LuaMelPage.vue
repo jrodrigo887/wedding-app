@@ -255,7 +255,31 @@ async function pagarCartao(): Promise<void> {
 .page-container {
   min-height: 100vh;
   padding: 2rem 1rem 4rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('@/assets/25-IMG_6937.jpg') center / cover no-repeat;
+  opacity: 0.5;
+  z-index: 0;
+}
+
+.page-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: linear-gradient(135deg, #fefdfb 0%, #faf4e8 50%, #f5ebd7 100%);
+  opacity: 0.55;
+  z-index: 0;
+}
+
+.page-container > * {
+  position: relative;
+  z-index: 1;
 }
 
 .page-header {
@@ -350,7 +374,7 @@ async function pagarCartao(): Promise<void> {
 }
 
 .gift-card {
-  background: white;
+  background: transparent;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   cursor: pointer;
@@ -373,6 +397,10 @@ async function pagarCartao(): Promise<void> {
   flex-direction: column;
   gap: 0.4rem;
   flex: 1;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 0 0 16px 16px;
 }
 
 .card-title {

@@ -175,22 +175,45 @@ const openLinkNaBio = (): void => {
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('@/app/assets/IMG_6499.jpg') center / cover no-repeat;
+  opacity: 0.5;
+  z-index: 0;
+}
+
+.page-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: linear-gradient(135deg, #fefdfb 0%, #faf4e8 50%, #f5ebd7 100%);
+  opacity: 0.55;
+  z-index: 0;
 }
 
 .card {
   width: 100%;
   max-width: 420px;
-  background: white;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 24px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
   overflow: hidden;
+  position: relative;
+  z-index: 1;
 }
 
 .card-header {
   padding: 2.5rem 2rem 2rem;
   text-align: center;
-  background: linear-gradient(180deg, #fffbf5 0%, #ffffff 100%);
+  background: linear-gradient(180deg, rgba(255, 251, 245, 0.35) 0%, rgba(255, 255, 255, 0.2) 100%);
 }
 
 .names {
@@ -298,7 +321,7 @@ const openLinkNaBio = (): void => {
 
 .card-footer {
   padding: 1rem 1.5rem;
-  background: #faf9f7;
+  background: rgba(250, 249, 247, 0.3);
   text-align: center;
 }
 
@@ -309,6 +332,10 @@ const openLinkNaBio = (): void => {
 }
 
 @media (max-width: 480px) {
+  .page-container {
+    padding: 1rem;
+  }
+
   .card {
     border-radius: 20px;
   }
