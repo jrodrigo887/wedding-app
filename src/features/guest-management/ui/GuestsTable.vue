@@ -26,6 +26,7 @@
             <th>Confirmado</th>
             <th>Check-in</th>
             <th>Convite</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -117,6 +118,15 @@
                 class="guests-table__invite-none"
               >—</span>
             </td>
+            <td class="guests-table__actions">
+              <button
+                class="guests-table__action-btn guests-table__action-btn--edit"
+                title="Editar convidado"
+                @click="handleEdit(guest)"
+              >
+                ✏️
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -142,10 +152,15 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'regenerate-token', guestId: number): void;
+  (e: 'edit', guest: Guest): void;
 }>();
 
 const handleRegenerateToken = (guestId: number | undefined): void => {
   if (guestId !== undefined) emit('regenerate-token', guestId);
+};
+
+const handleEdit = (guest: Guest): void => {
+  emit('edit', guest);
 };
 
 const { openWhatsAppDirect } = useWhatsApp();
@@ -333,5 +348,41 @@ const sendWhatsApp = (guest: Guest): void => {
 
 .guests-table__invite-none {
   color: #475569;
+}
+
+/* Actions column */
+.guests-table__actions {
+  white-space: nowrap;
+}
+
+.guests-table__action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #2d2d44;
+  border-radius: 0.375rem;
+  background: #1e1e36;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.15s;
+  margin-right: 0.25rem;
+}
+
+.guests-table__action-btn:hover {
+  background: #2d2d44;
+  color: #e2e8f0;
+}
+
+.guests-table__action-btn--edit {
+  color: #3b82f6;
+  border-color: #1e3a8a;
+}
+
+.guests-table__action-btn--edit:hover {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
 }
 </style>

@@ -119,6 +119,19 @@ export const useGuestsStore = defineStore('guests', () => {
     }
   };
 
+  const updateGuest = async (id: number, data: Partial<Guest>): Promise<void> => {
+    const updatedGuest = await guestRepository.update(id, data);
+    const index = guests.value.findIndex(g => g.id === id);
+    if (index !== -1) {
+      guests.value[index] = updatedGuest;
+    }
+    // Atualizar stats e check-ins se necessário
+    await fetchStats(true);
+    if (data.checkin !== undefined) {
+      await fetchCheckedIn(true);
+    }
+  };
+
   const reset = (): void => {
     guests.value = [];
     checkedInGuests.value = [];
@@ -148,6 +161,7 @@ export const useGuestsStore = defineStore('guests', () => {
     refresh,
     registerCheckin,
     regenerateInviteToken,
+    updateGuest,
     reset,
   };
 });

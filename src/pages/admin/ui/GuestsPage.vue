@@ -58,6 +58,7 @@
           :loading="guestsStore.loading"
           :base-url="baseUrl"
           @regenerate-token="handleRegenerateToken"
+          @edit="handleEditGuest"
         />
       </div>
 
@@ -72,6 +73,14 @@
         />
       </div>
     </div>
+
+    <!-- Modal de Edição -->
+    <GuestEditModal
+      :is-open="isEditModalOpen"
+      :guest="selectedGuest"
+      @close="handleCloseEditModal"
+      @save="handleSaveGuest"
+    />
   </div>
 </template>
 
@@ -83,17 +92,42 @@ import {
   CheckinsList,
   GuestsTable,
 } from '@/features/guest-management';
+import GuestEditModal from '@/features/guest-management/ui/GuestEditModal.vue';
 import { ProgressBar } from '@shared/ui';
+import type { Guest } from '@/entities/guest';
 
 const guestsStore = useGuestsStore();
 const activeTab = ref<'overview' | 'lista' | 'checkins'>('overview');
 const baseUrl = window.location.origin;
+
+// Modal state
+const isEditModalOpen = ref(false);
+const selectedGuest = ref<Guest | null>(null);
 
 const handleRegenerateToken = async (guestId: number): Promise<void> => {
   try {
     await guestsStore.regenerateInviteToken(guestId);
   } catch (err) {
     console.error('[GuestsPage] Erro ao regenerar token:', err);
+  }
+};
+
+const handleEditGuest = (guest: Guest): void => {
+  selectedGuest.value = guest;
+  isEditModalOpen.value = true;
+};
+
+const handleCloseEditModal = (): void => {
+  isEditModalOpen.value = false;
+  selectedGuest.value = null;
+};
+
+const handleSaveGuest = async (id: number, data: Partial<Guest>): Promise<void> => {
+  try {
+    await guestsStore.updateGuest(id, data);
+    handleCloseEditModal();
+  } catch (err) {
+    console.error('[GuestsPage] Erro ao atualizar convidado:', err);
   }
 };
 

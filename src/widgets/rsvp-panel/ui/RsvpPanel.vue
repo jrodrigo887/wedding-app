@@ -35,7 +35,7 @@
           <router-link
             to="/"
             class="rsvp-declined__link"
-            >Ver Lista de Presentes →</router-link
+            >Presentear →</router-link
           >
         </div>
       </RsvpCard>
@@ -170,7 +170,7 @@
             to="/lua-de-mel"
             class="rsvp-success__link"
           >
-            Ver Lista de Presentes →
+            Presentear →
           </router-link>
         </div>
       </RsvpCard>
@@ -291,7 +291,7 @@
             to="/"
             class="rsvp-declined__link"
           >
-            Ver Lista de Presentes →
+            Presentear →
           </router-link>
         </div>
       </RsvpCard>
@@ -302,7 +302,7 @@
           to="/"
           class="rsvp-footer__link"
         >
-          🎁 Ver Lista de Presentes
+          🎁 Presentear
         </router-link>
       </footer>
     </div>

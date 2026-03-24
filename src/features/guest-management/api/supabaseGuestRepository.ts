@@ -155,4 +155,31 @@ export class GuestRepositorySupabase {
     if (error) throw new Error(error.message);
     return data as string;
   }
+
+  async update(id: number, data: Partial<Guest>): Promise<Guest> {
+    const updateData: Record<string, unknown> = {
+      ...data,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Remove campos que não devem ser atualizados diretamente
+    delete updateData.id;
+    delete updateData.created_at;
+    delete updateData.invite_token;
+    delete updateData.short_code;
+
+    const { data: updatedData, error } = await supabase
+      .from(this.TABLE)
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[GuestRepositorySupabase] Erro ao atualizar convidado:', error);
+      throw new Error(error.message);
+    }
+
+    return this.mapToGuest(updatedData);
+  }
 }
