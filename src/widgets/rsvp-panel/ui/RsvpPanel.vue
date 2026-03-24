@@ -558,7 +558,7 @@ onMounted(async () => {
   position: absolute;
   inset: 0;
   background: url('@/app/assets/IMG_6499.jpg') center / cover no-repeat;
-  opacity: 0.18;
+  opacity: 0.5;
   z-index: 0;
 }
 
@@ -567,7 +567,7 @@ onMounted(async () => {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, #fff9f0 0%, #f5e6d3 100%);
-  opacity: 0.85;
+  opacity: 0.55;
   z-index: 0;
 }
 
