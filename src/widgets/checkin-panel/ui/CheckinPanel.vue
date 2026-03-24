@@ -211,6 +211,27 @@
         @use-code="useScannedCode"
         @retry="retryScanner"
       />
+
+      <!-- Modal de Confirmação de Check-in -->
+      <CheckinConfirmModal
+        :show="showConfirmModal"
+        :guest="scannedGuest"
+        :loading="checkingIn"
+        :error="store.error"
+        :success="checkinSuccess"
+        @confirm="confirmScannedCheckin"
+        @cancel="cancelScannedCheckin"
+      />
+
+      <!-- Modal de Validação do Administrador -->
+      <AdminValidationModal
+        :show="showAdminValidation"
+        :guest="store.currentGuest"
+        :loading="checkingIn"
+        :error="store.error"
+        @approve="handleAdminApproval"
+        @cancel="handleAdminCancel"
+      />
     </div>
   </div>
 </template>
@@ -225,7 +246,10 @@ import {
   PinAuth,
   QRScanner,
   CheckinStats,
+  CheckinConfirmModal,
+  AdminValidationModal,
 } from '@/features/guest-checkin';
+import type { Guest } from '@/entities/guest';
 
 /**
  * Widget: CheckinPanel
@@ -249,6 +273,15 @@ const scanning = ref(false);
 const scannerStatus = ref('');
 const scannedCode = ref('');
 let html5QrCode: Html5Qrcode | null = null;
+
+// Confirm modal state
+const showConfirmModal = ref(false);
+const scannedGuest = ref<Guest | null>(null);
+const checkinSuccess = ref(false);
+
+// Admin validation state
+const showAdminValidation = ref(false);
+const isQrCodeCheckin = ref(false); // Flag para identificar se é check-in por QR Code
 
 // Carrega contagem quando autenticado
 watch(
@@ -284,6 +317,7 @@ const checkGuest = async (): Promise<void> => {
   if (!code.value.trim()) return;
 
   store.resetCheckinFlow();
+  isQrCodeCheckin.value = false; // Marca como check-in manual
 
   try {
     await store.checkGuestCode(getFullCode());
@@ -295,6 +329,18 @@ const checkGuest = async (): Promise<void> => {
 const performCheckin = async (): Promise<void> => {
   if (!store.currentGuest) return;
 
+  // Se não confirmou presença, exigir validação do administrador
+  // Exceto se for check-in por QR Code (já confirmou para gerar o QR Code)
+  if (!store.currentGuest.confirmado && !isQrCodeCheckin.value) {
+    showAdminValidation.value = true;
+    return;
+  }
+
+  // Prosseguir com check-in
+  await executeCheckin();
+};
+
+const executeCheckin = async (): Promise<void> => {
   checkingIn.value = true;
 
   try {
@@ -316,6 +362,8 @@ const formatTime = (dateString: string): string => {
 const resetGuest = (): void => {
   code.value = '';
   store.resetCheckinFlow();
+  isQrCodeCheckin.value = false;
+  showAdminValidation.value = false;
   nextTick(() => {
     codeInput.value?.focus();
   });
@@ -365,20 +413,42 @@ const openScanner = async (): Promise<void> => {
   }
 };
 
-const onQrCodeSuccess = (decodedText: string): void => {
+const onQrCodeSuccess = async (decodedText: string): Promise<void> => {
   scanning.value = false;
-  scannerStatus.value = '';
+  scannerStatus.value = 'Processando...';
 
   const extractedCode = extractCodeFromQR(decodedText);
 
   if (extractedCode) {
     scannedCode.value = extractedCode;
+    isQrCodeCheckin.value = true; // Marca como check-in por QR Code
+
+    // Buscar dados do convidado
+    try {
+      await store.checkGuestCode(extractedCode);
+
+      if (store.currentGuest) {
+        scannedGuest.value = store.currentGuest;
+        showConfirmModal.value = true;
+      }
+    } catch (err) {
+      console.error('Erro ao buscar convidado:', err);
+      scannerStatus.value = '';
+      isQrCodeCheckin.value = false;
+      setTimeout(() => {
+        store.error = null;
+        scanning.value = true;
+        scannerStatus.value = 'Aponte para o QR Code';
+      }, 2000);
+    }
   } else {
     store.error =
       'QR Code inválido. Certifique-se de usar o QR Code do convite.';
+    scannerStatus.value = '';
     setTimeout(() => {
       store.error = null;
       scanning.value = true;
+      scannerStatus.value = 'Aponte para o QR Code';
     }, 2000);
   }
 };
@@ -411,6 +481,17 @@ const closeScanner = async (): Promise<void> => {
   showScanner.value = false;
   scannedCode.value = '';
   scannerStatus.value = '';
+  showConfirmModal.value = false;
+  scannedGuest.value = null;
+  checkinSuccess.value = false;
+  isQrCodeCheckin.value = false;
+  showAdminValidation.value = false;
+  store.error = null;
+
+  // Focar no input de código ao fechar o scanner
+  nextTick(() => {
+    codeInput.value?.focus();
+  });
 };
 
 const stopScanner = async (): Promise<void> => {
@@ -445,6 +526,81 @@ const retryScanner = (): void => {
     scanning.value = true;
     scannerStatus.value = 'Aponte para o QR Code';
   }
+};
+
+// Confirm Modal Methods
+const confirmScannedCheckin = async (): Promise<void> => {
+  if (!scannedGuest.value || scannedGuest.value.checkin) {
+    showConfirmModal.value = false;
+    scannedGuest.value = null;
+    scannedCode.value = '';
+    store.error = null;
+    checkinSuccess.value = false;
+    isQrCodeCheckin.value = false;
+    scanning.value = true;
+    scannerStatus.value = 'Aponte para o QR Code';
+    return;
+  }
+
+  checkingIn.value = true;
+  store.error = null;
+
+  try {
+    // Check-in por QR Code não precisa validação (já confirmou para gerar o QR Code)
+    await store.registerCheckin(scannedCode.value);
+    checkingIn.value = false;
+
+    // Mostrar sucesso na modal
+    checkinSuccess.value = true;
+
+    // Aguardar 1.5s, fechar modal e voltar para o scanner
+    setTimeout(() => {
+      showConfirmModal.value = false;
+      scannedGuest.value = null;
+      scannedCode.value = '';
+      checkinSuccess.value = false;
+      isQrCodeCheckin.value = false;
+      store.resetCheckinFlow();
+      scanning.value = true;
+      scannerStatus.value = 'Aponte para o QR Code';
+    }, 1500);
+  } catch (err) {
+    console.error('Erro ao realizar check-in:', err);
+    checkingIn.value = false;
+    checkinSuccess.value = false;
+    // Erro será exibido na modal através do store.error
+  }
+};
+
+const cancelScannedCheckin = (): void => {
+  showConfirmModal.value = false;
+  scannedGuest.value = null;
+  scannedCode.value = '';
+  store.error = null;
+  checkinSuccess.value = false;
+  isQrCodeCheckin.value = false;
+
+  // Voltar para o scanner
+  scanning.value = true;
+  scannerStatus.value = 'Aponte para o QR Code';
+};
+
+// Admin Validation Methods
+const handleAdminApproval = async (): Promise<void> => {
+  // Administrador autorizou o check-in
+  await executeCheckin();
+  showAdminValidation.value = false;
+};
+
+const handleAdminCancel = (): void => {
+  // Administrador recusou o check-in
+  showAdminValidation.value = false;
+  store.error = 'Check-in recusado pelo administrador.';
+
+  // Limpar após 3 segundos
+  setTimeout(() => {
+    resetGuest();
+  }, 3000);
 };
 
 onBeforeUnmount(() => {

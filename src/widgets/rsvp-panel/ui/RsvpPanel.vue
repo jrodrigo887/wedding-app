@@ -3,7 +3,6 @@
     <div class="rsvp-container">
       <!-- Header -->
       <header class="rsvp-header">
-        <div class="rsvp-header__icon">💒</div>
         <h1 class="rsvp-header__title">Confirmação de Presença</h1>
         <p class="rsvp-header__subtitle">
           {{ APP_CONFIG.BRIDE_NAME }} & {{ APP_CONFIG.GROOM_NAME }}
@@ -549,13 +548,34 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #fff9f0 0%, #f5e6d3 100%);
   padding: 2rem 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.rsvp-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('@/app/assets/IMG_6499.jpg') center / cover no-repeat;
+  opacity: 0.18;
+  z-index: 0;
+}
+
+.rsvp-page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #fff9f0 0%, #f5e6d3 100%);
+  opacity: 0.85;
+  z-index: 0;
 }
 
 .rsvp-container {
   width: 100%;
   max-width: 480px;
+  position: relative;
+  z-index: 1;
 }
 
 /* Link loading */
