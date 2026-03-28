@@ -37,7 +37,7 @@ export const GIFT_ITEMS: GiftItem[] = [
     emoji: '🌊',
     title: 'Um dia inteiro de praia',
     description: 'Protetor solar, caldo de cana e total irresponsabilidade.',
-    price: 50,
+    price: 90,
     category: 'folga',
   },
   {
@@ -70,7 +70,7 @@ export const GIFT_ITEMS: GiftItem[] = [
     title: 'Coca zero na beira da piscina',
     description:
       'A segunda é por conta da casa. (Não é, mas foi bonito pensar.)',
-    price: 52,
+    price: 62,
     category: 'folga',
   },
   {
@@ -86,7 +86,7 @@ export const GIFT_ITEMS: GiftItem[] = [
     emoji: '☕',
     title: 'Café da manhã na cama',
     description: 'O único dia do ano que ele acorda antes das 9.',
-    price: 43,
+    price: 75,
     category: 'relaxar',
   },
   {
@@ -102,7 +102,7 @@ export const GIFT_ITEMS: GiftItem[] = [
     emoji: '🚗',
     title: 'Uber pro aeroporto às 4h',
     description: '30kg de bagagem + sem dormir = não é tão caro assim.',
-    price: 48.9,
+    price: 85,
     category: 'viagem',
   },
   {
@@ -124,7 +124,7 @@ export const GIFT_ITEMS: GiftItem[] = [
   {
     id: 14,
     emoji: '💊',
-    title: '"Fundo de emergência para TPM" (cofrinho)',
+    title: '"Fundo de emergência para TPM"',
     description: 'O noivo agradece a sua contribuição.',
     price: 100,
     category: 'relaxar',
@@ -132,10 +132,10 @@ export const GIFT_ITEMS: GiftItem[] = [
   {
     id: 15,
     emoji: '🧾',
-    title: 'Fundo de emergência da viagem',
+    title: 'Fundo de emergência para viagem',
     description:
       'Pra quando a bagagem sumir, o voo atrasar, ou ele perder o passaporte.',
-    price: 100,
+    price: 110,
     category: 'viagem',
   },
   {
@@ -144,7 +144,7 @@ export const GIFT_ITEMS: GiftItem[] = [
     title: 'Kit pós-festa',
     description:
       'Salada de frutas, água de coco e uma boa desculpa para não sair da cama.',
-    price: 45,
+    price: 120,
     category: 'relaxar',
   },
   {
@@ -152,7 +152,7 @@ export const GIFT_ITEMS: GiftItem[] = [
     emoji: '📖',
     title: 'Guia fictício: Lua de mel sem brigas',
     description: 'Spoiler: não existe. Mas pelo menos é engraçado tentar.',
-    price: 40,
+    price: 65,
     category: 'memória',
   },
   {
@@ -168,15 +168,7 @@ export const GIFT_ITEMS: GiftItem[] = [
     emoji: '🍿',
     title: 'Coleção de jogos para diversão do noivo e tristeza da noiva',
     description: 'Não contribui com isso, é sério!!!',
-    price: 55,
-    category: 'folga',
-  },
-  {
-    id: 20,
-    emoji: '🍿',
-    title: 'Teste',
-    description: 'Teste',
-    price: 5,
+    price: 95,
     category: 'folga',
   },
 ];
