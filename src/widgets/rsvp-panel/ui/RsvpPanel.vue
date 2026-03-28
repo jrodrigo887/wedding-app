@@ -166,6 +166,12 @@
 
         <div class="rsvp-success__actions">
           <router-link
+            to="/orientacoes"
+            class="rsvp-success__link rsvp-success__link--orientacoes"
+          >
+            Ver orientações para o dia →
+          </router-link>
+          <router-link
             to="/lua-de-mel"
             class="rsvp-success__link"
           >
@@ -869,6 +875,15 @@ onMounted(async () => {
 .rsvp-success__link:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(139, 58, 58, 0.3);
+}
+
+.rsvp-success__link--orientacoes {
+  background: linear-gradient(135deg, #d4b76a 0%, #c9a24a 100%);
+  box-shadow: 0 4px 12px rgba(212, 183, 106, 0.25);
+}
+
+.rsvp-success__link--orientacoes:hover {
+  box-shadow: 0 6px 16px rgba(212, 183, 106, 0.4);
 }
 
 /* Declined */

@@ -17,6 +17,7 @@ import {
 import { FeatureNotAvailablePage } from '@/pages/feature-not-available';
 import { LuaMelPage } from '@/pages/lua-de-mel';
 import { ObrigadoPage } from '@/pages/obrigado';
+import { OrientacoesPage } from '@/pages/orientacoes';
 
 // Widgets
 import { AdminLayout } from '@/widgets/admin-panel';
@@ -97,6 +98,11 @@ const routes: RouteRecordRaw[] = [
     path: '/obrigado',
     name: 'obrigado',
     component: ObrigadoPage,
+  },
+  {
+    path: '/orientacoes',
+    name: 'orientacoes',
+    component: OrientacoesPage,
   },
 
   // Página de feature não disponível (mantida para compatibilidade)
