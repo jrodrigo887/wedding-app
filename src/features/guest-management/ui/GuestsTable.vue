@@ -26,6 +26,7 @@
             <th>Confirmado</th>
             <th>Check-in</th>
             <th>Convite</th>
+            <th title="Convite enviado ao convidado">Envio</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -83,6 +84,32 @@
                   {{ copiedId === guest.id ? '✅' : '📋' }}
                 </button>
 
+                <!-- Copiar texto da mensagem -->
+                <button
+                  class="guests-table__invite-btn guests-table__invite-btn--copy-msg"
+                  :class="{ 'guests-table__invite-btn--msg-copied': copiedMsgId === guest.id }"
+                  :title="copiedMsgId === guest.id ? 'Mensagem copiada!' : 'Copiar mensagem + link'"
+                  @click="copyWhatsAppText(guest)"
+                >
+                  <template v-if="copiedMsgId === guest.id">✅</template>
+                  <svg
+                    v-else
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    <line x1="9" y1="9" x2="15" y2="9" />
+                    <line x1="9" y1="13" x2="13" y2="13" />
+                  </svg>
+                </button>
+
                 <!-- WhatsApp direto (só se tiver telefone) -->
                 <button
                   v-if="guest.telefone"
@@ -117,6 +144,17 @@
                 v-else
                 class="guests-table__invite-none"
               >—</span>
+            </td>
+            <td class="guests-table__delivery">
+              <label class="guests-table__checkbox-label" :title="guest.invitation_delivery ? 'Convite enviado' : 'Convite não enviado'">
+                <input
+                  type="checkbox"
+                  class="guests-table__checkbox"
+                  :checked="guest.invitation_delivery"
+                  @change="handleToggleDelivery(guest)"
+                />
+                <span class="guests-table__checkbox-custom" />
+              </label>
             </td>
             <td class="guests-table__actions">
               <button
@@ -153,10 +191,17 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'regenerate-token', guestId: number): void;
   (e: 'edit', guest: Guest): void;
+  (e: 'toggle-delivery', guestId: number, value: boolean): void;
 }>();
 
 const handleRegenerateToken = (guestId: number | undefined): void => {
   if (guestId !== undefined) emit('regenerate-token', guestId);
+};
+
+const handleToggleDelivery = (guest: Guest): void => {
+  if (guest.id !== undefined) {
+    emit('toggle-delivery', guest.id, !guest.invitation_delivery);
+  }
 };
 
 const handleEdit = (guest: Guest): void => {
@@ -166,6 +211,7 @@ const handleEdit = (guest: Guest): void => {
 const { openWhatsAppDirect } = useWhatsApp();
 
 const copiedId = ref<number | null>(null);
+const copiedMsgId = ref<number | null>(null);
 
 const getInviteLink = (guest: Guest): string => {
   const base = props.baseUrl ?? window.location.origin;
@@ -199,20 +245,42 @@ const copyInviteLink = async (guest: Guest): Promise<void> => {
   }
 };
 
-const sendWhatsApp = (guest: Guest): void => {
+const buildWhatsAppMessage = (guest: Guest): string => {
   const link = getInviteLink(guest);
   const weddingDate = new Date(`${APP_CONFIG.WEDDING_DATE}T12:00:00`).toLocaleDateString('pt-BR', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   });
-  const message = [
+  return [
     `Olá *${guest.nome}*!`,
     `Confirme sua presença no casamento de *${APP_CONFIG.BRIDE_NAME} & ${APP_CONFIG.GROOM_NAME}* pelo link abaixo:`,
     link,
     `*Data:* ${weddingDate}`,
   ].join('\n');
-  openWhatsAppDirect(guest.telefone ?? '', message);
+};
+
+const copyWhatsAppText = async (guest: Guest): Promise<void> => {
+  const id = guest.id ?? null;
+  const text = buildWhatsAppMessage(guest);
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const input = document.createElement('textarea');
+    input.value = text;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    document.body.removeChild(input);
+  }
+  copiedMsgId.value = id;
+  setTimeout(() => {
+    if (copiedMsgId.value === id) copiedMsgId.value = null;
+  }, 2000);
+};
+
+const sendWhatsApp = (guest: Guest): void => {
+  openWhatsAppDirect(guest.telefone ?? '', buildWhatsAppMessage(guest));
 };
 </script>
 
@@ -327,6 +395,21 @@ const sendWhatsApp = (guest: Guest): void => {
   color: #10b981;
 }
 
+.guests-table__invite-btn--copy-msg {
+  color: #818cf8;
+  border-color: #312e81;
+}
+
+.guests-table__invite-btn--copy-msg:hover {
+  background: rgba(129, 140, 248, 0.15);
+  color: #a5b4fc;
+}
+
+.guests-table__invite-btn--msg-copied {
+  border-color: #10b981;
+  color: #10b981;
+}
+
 .guests-table__invite-btn--whatsapp {
   color: #25d366;
   border-color: #1a6640;
@@ -348,6 +431,58 @@ const sendWhatsApp = (guest: Guest): void => {
 
 .guests-table__invite-none {
   color: #475569;
+}
+
+/* Delivery checkbox */
+.guests-table__delivery {
+  text-align: center;
+}
+
+.guests-table__checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.guests-table__checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.guests-table__checkbox-custom {
+  display: inline-block;
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 2px solid #2d2d44;
+  border-radius: 0.25rem;
+  background: #1e1e36;
+  position: relative;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.guests-table__checkbox:checked + .guests-table__checkbox-custom {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.guests-table__checkbox:checked + .guests-table__checkbox-custom::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0px;
+  width: 5px;
+  height: 9px;
+  border: 2px solid white;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+.guests-table__checkbox-label:hover .guests-table__checkbox-custom {
+  border-color: #10b981;
 }
 
 /* Actions column */

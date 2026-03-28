@@ -59,6 +59,7 @@
           :base-url="baseUrl"
           @regenerate-token="handleRegenerateToken"
           @edit="handleEditGuest"
+          @toggle-delivery="handleToggleDelivery"
         />
       </div>
 
@@ -128,6 +129,14 @@ const handleSaveGuest = async (id: number, data: Partial<Guest>): Promise<void> 
     handleCloseEditModal();
   } catch (err) {
     console.error('[GuestsPage] Erro ao atualizar convidado:', err);
+  }
+};
+
+const handleToggleDelivery = async (guestId: number, value: boolean): Promise<void> => {
+  try {
+    await guestsStore.updateGuest(guestId, { invitation_delivery: value });
+  } catch (err) {
+    console.error('[GuestsPage] Erro ao atualizar envio do convite:', err);
   }
 };
 
